@@ -106,19 +106,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   titleText: {
-    fontSize: 92,
-    fontWeight: 'bold',
+    fontSize: 82,
     color: '#FFFFFF',
     textTransform: 'uppercase',
     letterSpacing: 7,
     textShadowColor: 'rgba(139, 92, 246, 0.8)',
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 20,
-    marginBottom: 10,
+    marginBottom: 0,
     fontFamily: "Kodchasan"
   },
   subtitleText: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: '600',
     color: '#E0E7FF',
     textTransform: 'uppercase',
@@ -175,15 +174,17 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.6,
     shadowRadius: 8,
     elevation: 8,
+    
   },
   jogarText: {
     color: '#fff',
     fontSize: 24,
-    fontWeight: 'bold',
     textTransform: 'uppercase',
     letterSpacing: 2,
     textShadowColor: 'rgba(0, 0, 0, 0.5)',
     textShadowOffset: { width: 2, height: 2 },
     textShadowRadius: 4,
+    fontFamily: "Kodchasan"
+    
   },
 });

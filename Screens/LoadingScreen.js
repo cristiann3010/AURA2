@@ -204,7 +204,7 @@ const LoadingScreen = ({ navigation }) => {
             }
           ]}
         >
-          Preparando uma experiência incrível
+          
         </Animated.Text>
       </View>
       
@@ -217,7 +217,7 @@ const LoadingScreen = ({ navigation }) => {
           }
         ]}
       >
-        <Text style={styles.footerText}>✨ Premium Experience ✨</Text>
+        <Text style={styles.footerText}></Text>
       </Animated.View>
     </View>
   );

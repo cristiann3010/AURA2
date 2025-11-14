@@ -292,6 +292,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#2d004d',
     borderBottomWidth: 2,
     borderBottomColor: '#8b5cf6',
+    marginTop: 30,
     // ✅ REMOVIDA A MARGEM QUE CAUSAVA PROBLEMAS
   },
   backButton: {

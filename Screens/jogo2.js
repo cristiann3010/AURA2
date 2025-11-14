@@ -9,14 +9,16 @@ import {
   Animated,
   Dimensions,
   Alert,
-  ImageBackground
+  ImageBackground,
+  StatusBar,
+  Image
 } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
-const PLAYER_SIZE = 70;
+const PLAYER_SIZE = 90;
 const ITEM_SIZE = 50;
 const GAME_AREA_HEIGHT = height * 0.55;
-const PLAYER_SPEED = 60;
+const PLAYER_SPEED = 10; // DIMINUÍ A VELOCIDADE (era 15, agora 10)
 
 export default function Jogo2({ navigation }) {
   const [score, setScore] = useState(0);
@@ -26,13 +28,36 @@ export default function Jogo2({ navigation }) {
   const [level, setLevel] = useState(1);
   const [items, setItems] = useState([]);
   const [timeLeft, setTimeLeft] = useState(40);
-  const [playerX, setPlayerX] = useState(width / 2 - PLAYER_SIZE / 2);
   const [collectedItems, setCollectedItems] = useState(new Set());
+  
+  // SISTEMA DE MOVIMENTAÇÃO ULTRA FLUIDA
+  const playerX = useRef(new Animated.Value(width / 2 - PLAYER_SIZE / 2)).current;
   
   const spawnTimer = useRef(null);
   const gameTimer = useRef(null);
   const itemsRef = useRef([]);
   const playerXRef = useRef(width / 2 - PLAYER_SIZE / 2);
+  
+  // Estados para controle de movimento
+  const [isMovingLeft, setIsMovingLeft] = useState(false);
+  const [isMovingRight, setIsMovingRight] = useState(false);
+  const movementAnimation = useRef(null);
+  const lastUpdateTime = useRef(Date.now());
+
+  // CONFIGURAÇÃO DAS IMAGENS
+  const ARROW_IMAGES = {
+    left: require('../assets/sim.png'),
+    right: require('../assets/nao.png'),
+  };
+
+  // IMAGENS PARA O JOGO
+  const GAME_IMAGES = {
+    player: require('../assets/macaco.png'),
+    banana: require('../assets/banana.png.png'),
+    obstacle1: require('../assets/banana5.png'),
+    obstacle2: require('../assets/spider.png'),
+    obstacle3: require('../assets/scorpion.png'),
+  };
 
   // Manter referências atualizadas
   useEffect(() => {
@@ -40,10 +65,53 @@ export default function Jogo2({ navigation }) {
   }, [items]);
 
   useEffect(() => {
-    playerXRef.current = playerX;
-  }, [playerX]);
+    playerXRef.current = playerX._value;
+  }, [playerX._value]);
 
-  // Timer do jogo (40 segundos)
+  // SISTEMA DE MOVIMENTAÇÃO ULTRA FLUIDA - Game Loop
+  useEffect(() => {
+    if (!gameActive || gameOver) return;
+
+    let animationFrameId;
+    const gameLoop = () => {
+      const now = Date.now();
+      const deltaTime = now - lastUpdateTime.current;
+      lastUpdateTime.current = now;
+
+      if (isMovingLeft || isMovingRight) {
+        const currentX = playerX._value;
+        let newX = currentX;
+        
+        // Cálculo baseado no tempo para movimento suave - VELOCIDADE REDUZIDA
+        const movement = (PLAYER_SPEED * deltaTime) / 16;
+        
+        if (isMovingLeft) {
+          newX = Math.max(10, currentX - movement);
+        } else if (isMovingRight) {
+          newX = Math.min(width - PLAYER_SIZE - 10, currentX + movement);
+        }
+        
+        // Atualização DIRETA do valor - MUITO MAIS RÁPIDO
+        if (newX !== currentX) {
+          playerX.setValue(newX);
+        }
+      }
+      
+      animationFrameId = requestAnimationFrame(gameLoop);
+    };
+
+    // Iniciar o game loop
+    animationFrameId = requestAnimationFrame(gameLoop);
+    lastUpdateTime.current = Date.now();
+
+    return () => {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+    };
+  }, [isMovingLeft, isMovingRight, gameActive, gameOver]);
+
+  // Timer do jogo
   useEffect(() => {
     if (gameActive && timeLeft > 0 && !gameOver) {
       gameTimer.current = setTimeout(() => {
@@ -68,9 +136,20 @@ export default function Jogo2({ navigation }) {
     setGameOver(false);
     setItems([]);
     setCollectedItems(new Set());
-    setPlayerX(width / 2 - PLAYER_SIZE / 2);
-    playerXRef.current = width / 2 - PLAYER_SIZE / 2;
+    
+    // Resetar posição com animação suave
+    const startX = width / 2 - PLAYER_SIZE / 2;
+    Animated.spring(playerX, {
+      toValue: startX,
+      tension: 50,
+      friction: 7,
+      useNativeDriver: false,
+    }).start();
+    
+    playerXRef.current = startX;
     itemsRef.current = [];
+    setIsMovingLeft(false);
+    setIsMovingRight(false);
   };
 
   // Spawnar itens caindo
@@ -90,18 +169,20 @@ export default function Jogo2({ navigation }) {
 
   // Criar novo item caindo
   const spawnItem = () => {
-    const isGood = Math.random() > 0.30; // 70% bananas boas, 30% ruins
+    const isGood = Math.random() > 0.30;
     const itemTypes = isGood 
-      ? ['🍌', '🍌', '🍌', '🍌', '🍌'] // Mais bananas
-      : ['🦂', '🕷️', '💩']; // Obstáculos perigosos pro macaco
+      ? ['banana', 'banana', 'banana', 'banana', 'banana']
+      : ['obstacle1', 'obstacle2', 'obstacle3'];
     
     const itemId = Date.now() + Math.random();
+    const itemType = itemTypes[Math.floor(Math.random() * itemTypes.length)];
     
     const newItem = {
       id: itemId,
       x: Math.random() * (width - ITEM_SIZE - 40) + 20,
       y: new Animated.Value(-ITEM_SIZE),
-      emoji: itemTypes[Math.floor(Math.random() * itemTypes.length)],
+      type: itemType,
+      image: GAME_IMAGES[itemType],
       isGood: isGood,
       points: isGood ? (Math.floor(Math.random() * 3) + 1) * 10 : 0,
       collected: false,
@@ -118,21 +199,16 @@ export default function Jogo2({ navigation }) {
       removeItem(itemId);
     });
 
-    // Sistema de detecção de colisão melhorado
+    // Sistema de detecção de colisão
     let collisionChecked = false;
     const collisionInterval = setInterval(() => {
       const currentY = newItem.y._value;
       
-      // Calcular a posição Y do jogador (bottom: 15 + tamanho do player)
       const playerTop = GAME_AREA_HEIGHT - 15 - PLAYER_SIZE;
       const playerBottom = GAME_AREA_HEIGHT - 15;
-      
-      // Só verificar quando o item está na altura do jogador
-      // Item bottom = currentY + ITEM_SIZE
       const itemBottom = currentY + ITEM_SIZE;
       
       if (itemBottom >= playerTop && currentY <= playerBottom && !collisionChecked) {
-        // Verificar se ainda não foi coletado
         const item = itemsRef.current.find(i => i.id === itemId);
         if (!item || item.collected) {
           clearInterval(collisionInterval);
@@ -143,36 +219,30 @@ export default function Jogo2({ navigation }) {
         const playerCenterX = playerXRef.current + PLAYER_SIZE / 2;
         const distanceX = Math.abs(itemCenterX - playerCenterX);
         
-        // Hitbox melhorada - colisão mais precisa
         if (distanceX < 50) {
-          collisionChecked = true; // Prevenir múltiplas verificações
+          collisionChecked = true;
           clearInterval(collisionInterval);
           handleCollision(itemId, newItem);
         }
       } else if (currentY > playerBottom) {
-        // Item passou completamente do jogador
         clearInterval(collisionInterval);
       }
     }, 30);
   };
 
-  // Lidar com colisão - IMEDIATO
+  // Lidar com colisão
   const handleCollision = (itemId, item) => {
-    // Prevenir múltiplas colisões no mesmo item
     if (collectedItems.has(itemId)) return;
     
     setCollectedItems(prev => new Set([...prev, itemId]));
     
-    // Marcar como coletado IMEDIATAMENTE
     setItems(prev => prev.map(i => 
       i.id === itemId ? { ...i, collected: true } : i
     ));
 
-    // Remover visualmente
     removeItem(itemId);
     
     if (item.isGood) {
-      // Pontos IMEDIATOS
       setScore(prev => {
         const newScore = prev + item.points;
         if (newScore >= level * 100 && level < 10) {
@@ -181,7 +251,6 @@ export default function Jogo2({ navigation }) {
         return newScore;
       });
     } else {
-      // Perda de vida IMEDIATA
       setLives(prev => {
         const newLives = prev - 1;
         if (newLives <= 0) {
@@ -197,24 +266,50 @@ export default function Jogo2({ navigation }) {
     setItems(prev => prev.filter(item => item.id !== id));
   };
 
-  // Mover jogador para ESQUERDA
-  const moveLeft = () => {
+  // MOVIMENTAÇÃO ULTRA FLUIDA
+  const startMoveLeft = () => {
     if (!gameActive || gameOver) return;
-    setPlayerX(prev => {
-      const newPos = Math.max(10, prev - PLAYER_SPEED);
-      playerXRef.current = newPos;
-      return newPos;
-    });
+    setIsMovingRight(false);
+    setIsMovingLeft(true);
   };
 
-  // Mover jogador para DIREITA
-  const moveRight = () => {
+  const startMoveRight = () => {
     if (!gameActive || gameOver) return;
-    setPlayerX(prev => {
-      const newPos = Math.min(width - PLAYER_SIZE - 10, prev + PLAYER_SPEED);
-      playerXRef.current = newPos;
-      return newPos;
-    });
+    setIsMovingLeft(false);
+    setIsMovingRight(true);
+  };
+
+  // Parar movimento
+  const stopMove = () => {
+    setIsMovingLeft(false);
+    setIsMovingRight(false);
+  };
+
+  // Movimento rápido com spring animation - VELOCIDADE REDUZIDA
+  const quickMoveLeft = () => {
+    if (!gameActive || gameOver) return;
+    const currentX = playerX._value;
+    const newX = Math.max(10, currentX - 40); // ERA 60, AGORA 40
+    
+    Animated.spring(playerX, {
+      toValue: newX,
+      tension: 100,
+      friction: 5,
+      useNativeDriver: false,
+    }).start();
+  };
+
+  const quickMoveRight = () => {
+    if (!gameActive || gameOver) return;
+    const currentX = playerX._value;
+    const newX = Math.min(width - PLAYER_SIZE - 10, currentX + 40); // ERA 60, AGORA 40
+    
+    Animated.spring(playerX, {
+      toValue: newX,
+      tension: 100,
+      friction: 5,
+      useNativeDriver: false,
+    }).start();
   };
 
   // Fim do jogo
@@ -224,6 +319,8 @@ export default function Jogo2({ navigation }) {
     if (spawnTimer.current) clearInterval(spawnTimer.current);
     if (gameTimer.current) clearTimeout(gameTimer.current);
     setItems([]);
+    setIsMovingLeft(false);
+    setIsMovingRight(false);
 
     const message = reason === 'time' 
       ? '⏰ Tempo Esgotado!' 
@@ -251,14 +348,21 @@ export default function Jogo2({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.backButton}>← Voltar</Text>
-        </TouchableOpacity>
-        <Text style={styles.title}>🐵 Macaco das Bananas</Text>
-        <View style={styles.placeholder} />
-      </View>
+      <StatusBar backgroundColor="#2d004d" barStyle="light-content" />
+      
+      {/* HEADER */}
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.header}>
+          <TouchableOpacity 
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Text style={styles.backButtonText}>←</Text>
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>🐵 Macaco das Bananas</Text>
+          <View style={styles.headerSpacer} />
+        </View>
+      </SafeAreaView>
 
       {/* Painel de Informações */}
       <View style={styles.infoPanel}>
@@ -284,26 +388,19 @@ export default function Jogo2({ navigation }) {
         </View>
       </View>
 
-      {/* Área do Jogo com FUNDO */}
+      {/* Área do Jogo */}
       <ImageBackground
-        source={require('../assets/background3.png')}
+        source={require('../assets/bgmonk.png')}
         style={styles.gameArea}
         resizeMode="cover"
       >
         <View style={styles.gameOverlay}>
           {!gameActive && !gameOver && (
             <View style={styles.startScreen}>
-              <Text style={styles.startTitle}>🐵 Macaco das Bananas 🍌</Text>
+              <Text style={styles.startTitle}>Macaco das Bananas</Text>
               <Text style={styles.startDescription}>
-                Ajude o macaquinho a pegar{'\n'}
-                todas as bananas!
+                Pegue as bananas e evite os perigos
               </Text>
-              <View style={styles.legendContainer}>
-                <Text style={styles.legendTitle}>Como jogar:</Text>
-                <Text style={styles.legendItem}>🍌 Bananas = Pontos (+10/+20/+30)</Text>
-                <Text style={styles.legendItem}>🦂 🕷️ 💩 = Perder vida (-1❤️)</Text>
-                <Text style={styles.legendItem}>⏰ Você tem 40 segundos!</Text>
-              </View>
               <TouchableOpacity style={styles.startButton} onPress={startGame}>
                 <Text style={styles.startButtonText}>COMEÇAR</Text>
               </TouchableOpacity>
@@ -325,13 +422,17 @@ export default function Jogo2({ navigation }) {
                       },
                     ]}
                   >
-                    <Text style={styles.itemEmoji}>{item.emoji}</Text>
+                    <Image 
+                      source={item.image} 
+                      style={styles.itemImage}
+                      resizeMode="contain"
+                    />
                   </Animated.View>
                 )
               ))}
 
-              {/* Jogador - MACACO */}
-              <View
+              {/* Jogador - MOVIMENTAÇÃO ULTRA FLUIDA */}
+              <Animated.View
                 style={[
                   styles.player,
                   {
@@ -340,45 +441,51 @@ export default function Jogo2({ navigation }) {
                   },
                 ]}
               >
-                <Text style={styles.playerEmoji}>🐵</Text>
-              </View>
+                <Image 
+                  source={GAME_IMAGES.player} 
+                  style={styles.playerImage}
+                  resizeMode="contain"
+                />
+              </Animated.View>
             </>
           )}
         </View>
       </ImageBackground>
 
-      {/* Controles - BOTÕES GRANDES */}
+      {/* Controles - RESPONSIVOS E FLUIDOS */}
       {gameActive && !gameOver && (
         <View style={styles.controls}>
           <TouchableOpacity
             style={[styles.controlButton, styles.leftButton]}
-            onPress={moveLeft}
-            activeOpacity={0.6}
+            onPressIn={startMoveLeft}
+            onPressOut={stopMove}
+            onPress={quickMoveLeft}
+            activeOpacity={0.8}
+            delayPressIn={0}
           >
-            <Text style={styles.controlText}>⬅️</Text>
+            <Image 
+              source={ARROW_IMAGES.left}
+              style={styles.arrowImage}
+              resizeMode="contain"
+            />
             <Text style={styles.controlLabel}>ESQUERDA</Text>
           </TouchableOpacity>
           
           <TouchableOpacity
             style={[styles.controlButton, styles.rightButton]}
-            onPress={moveRight}
-            activeOpacity={0.6}
+            onPressIn={startMoveRight}
+            onPressOut={stopMove}
+            onPress={quickMoveRight}
+            activeOpacity={0.8}
+            delayPressIn={0}
           >
-            <Text style={styles.controlText}>➡️</Text>
+            <Image 
+              source={ARROW_IMAGES.right}
+              style={styles.arrowImage}
+              resizeMode="contain"
+            />
             <Text style={styles.controlLabel}>DIREITA</Text>
           </TouchableOpacity>
-        </View>
-      )}
-
-      {/* Instruções */}
-      {!gameActive && !gameOver && (
-        <View style={styles.instructions}>
-          <Text style={styles.instructionsTitle}>Dicas:</Text>
-          <Text style={styles.instructionsText}>
-            • Mova o macaquinho para pegar bananas{'\n'}
-            • Cuidado com os perigos da floresta!{'\n'}
-            • Quanto mais bananas, mais rápido fica!
-          </Text>
         </View>
       )}
     </SafeAreaView>
@@ -390,26 +497,47 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#1a4d2e',
   },
+  safeArea: {
+    backgroundColor: '#2d004d',
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 15,
-    backgroundColor: '#2d5f3f',
+    backgroundColor: '#2d004d',
+    borderBottomWidth: 2,
+    borderBottomColor: '#8b5cf6',
+    marginTop: 30,
   },
   backButton: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '600',
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: 'rgba(139, 92, 246, 0.3)',
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  title: {
+  backButtonText: {
+    color: '#ffffff',
+    fontSize: 26,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    textAlignVertical: 'center',
+    lineHeight: 21,
+    includeFontPadding: false,
+  },
+  headerTitle: {
     color: '#ffffff',
     fontSize: 20,
     fontWeight: 'bold',
+    textAlign: 'center',
+    flex: 1,
   },
-  placeholder: {
-    width: 60,
+  headerSpacer: {
+    width: 40,
   },
   infoPanel: {
     flexDirection: 'row',
@@ -418,6 +546,7 @@ const styles = StyleSheet.create({
     padding: 12,
     backgroundColor: 'rgba(45, 95, 63, 0.9)',
     margin: 15,
+    marginTop: 10,
     borderRadius: 15,
     borderWidth: 2,
     borderColor: 'rgba(139, 195, 74, 0.5)',
@@ -453,60 +582,34 @@ const styles = StyleSheet.create({
   },
   gameOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.15)', // Overlay suave para melhor visibilidade
+    backgroundColor: 'rgba(0, 0, 0, 0.15)',
   },
   startScreen: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 20,
-    backgroundColor: 'rgba(45, 95, 63, 0.85)',
-    margin: 10,
-    borderRadius: 15,
+    padding: 30,
+    backgroundColor: 'rgba(45, 95, 63, 0.9)',
   },
   startTitle: {
     color: '#ffffff',
-    fontSize: 26,
+    fontSize: 28,
     fontWeight: 'bold',
-    marginBottom: 15,
+    marginBottom: 10,
     textAlign: 'center',
-    textShadowColor: 'rgba(0, 0, 0, 0.5)',
-    textShadowOffset: { width: 2, height: 2 },
-    textShadowRadius: 3,
   },
   startDescription: {
     color: '#c8e6c9',
     fontSize: 16,
     textAlign: 'center',
-    marginBottom: 20,
-    lineHeight: 24,
-  },
-  legendContainer: {
-    backgroundColor: 'rgba(139, 195, 74, 0.3)',
-    padding: 15,
-    borderRadius: 12,
-    marginBottom: 25,
-    borderWidth: 2,
-    borderColor: 'rgba(139, 195, 74, 0.5)',
-  },
-  legendTitle: {
-    color: '#ffffff',
-    fontSize: 14,
-    fontWeight: 'bold',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  legendItem: {
-    color: '#c8e6c9',
-    fontSize: 13,
-    marginVertical: 3,
-    textAlign: 'center',
+    marginBottom: 40,
+    lineHeight: 22,
   },
   startButton: {
     backgroundColor: '#8bc34a',
-    paddingHorizontal: 50,
+    paddingHorizontal: 60,
     paddingVertical: 18,
-    borderRadius: 15,
+    borderRadius: 25,
     borderWidth: 3,
     borderColor: '#c8e6c9',
   },
@@ -514,7 +617,7 @@ const styles = StyleSheet.create({
     color: '#1a4d2e',
     fontSize: 20,
     fontWeight: 'bold',
-    letterSpacing: 2,
+    letterSpacing: 1,
   },
   item: {
     position: 'absolute',
@@ -523,11 +626,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  itemEmoji: {
-    fontSize: 45,
-    textShadowColor: 'rgba(0, 0, 0, 0.3)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 2,
+  itemImage: {
+    width: ITEM_SIZE - 5,
+    height: ITEM_SIZE - 5,
   },
   player: {
     position: 'absolute',
@@ -535,13 +636,10 @@ const styles = StyleSheet.create({
     height: PLAYER_SIZE,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(139, 195, 74, 0.3)',
-    borderRadius: 35,
-    borderWidth: 3,
-    borderColor: '#c8e6c9',
   },
-  playerEmoji: {
-    fontSize: 50,
+  playerImage: {
+    width: PLAYER_SIZE,
+    height: PLAYER_SIZE,
   },
   controls: {
     flexDirection: 'row',
@@ -565,8 +663,9 @@ const styles = StyleSheet.create({
   rightButton: {
     borderColor: '#c8e6c9',
   },
-  controlText: {
-    fontSize: 36,
+  arrowImage: {
+    width: 40,
+    height: 40,
     marginBottom: 5,
   },
   controlLabel: {
@@ -574,25 +673,5 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: 'bold',
     letterSpacing: 1,
-  },
-  instructions: {
-    padding: 15,
-    backgroundColor: 'rgba(45, 95, 63, 0.8)',
-    marginHorizontal: 15,
-    marginBottom: 10,
-    borderRadius: 12,
-    borderLeftWidth: 4,
-    borderLeftColor: '#8bc34a',
-  },
-  instructionsTitle: {
-    color: '#ffffff',
-    fontSize: 15,
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
-  instructionsText: {
-    color: '#c8e6c9',
-    fontSize: 13,
-    lineHeight: 20,
   },
 });

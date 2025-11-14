@@ -9,28 +9,29 @@ import {
   TouchableOpacity,
   StatusBar
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient'; // 💜 adiciona o gradiente igual ao game1.js
 
 const { width, height } = Dimensions.get('window');
 
 export default function MemoryGame({ navigation }) {
   
   const handlePressGame1 = () => {
-    navigation.navigate('Jogo1');
-  };
-
-  const handlePressGame2 = () => {
     navigation.navigate('Jogo2');
   };
 
+  const handlePressGame2 = () => {
+    navigation.navigate('Jogo6');
+  };
+
   const handlePressGame3 = () => {
-    navigation.navigate('Jogo3');
+    navigation.navigate('Jogo7');
   };
 
   return (
     <View style={styles.container}>
       <StatusBar backgroundColor="#2d004d" barStyle="light-content" />
       
-      {/* ESTRUTURA FIXA NO TOPO - MESMA DAS OUTRAS TELAS */}
+      {/* HEADER */}
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.header}>
           <TouchableOpacity 
@@ -44,60 +45,68 @@ export default function MemoryGame({ navigation }) {
         </View>
       </SafeAreaView>
 
-      {/* CONTEÚDO PRINCIPAL */}
+      {/* CONTEÚDO */}
       <View style={styles.content}>
-        {/* Container dos retângulos */}
         <View style={styles.rectanglesContainer}>
-          
-          {/* Primeiro retângulo - AGORA CLICÁVEL */}
-          <TouchableOpacity 
-            style={[styles.rectangle, styles.rectangle1]}
-            onPress={handlePressGame1}
-            activeOpacity={0.8}
-          >
-            <Image 
-              source={require('../assets/monk1.png')}
-              style={styles.rectangleImage2}
-              resizeMode="contain"
-            />
-            <View style={styles.textContainer}>
-              <Text style={styles.gameTitle}>PEGA BANANA</Text>
-              <Text style={styles.gameSubtitle}>Jogo de memória divertido</Text>
-            </View>
+
+          {/* === Retângulo 1 === */}
+          <TouchableOpacity onPress={handlePressGame1} activeOpacity={0.8}>
+            <LinearGradient
+              colors={['#C884FF', '#784F99']} // 💜 mesmo gradiente do game1
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={[styles.rectangle, styles.rectangle1]}
+            >
+              <Image 
+                source={require('../assets/monk1.png')}
+                style={styles.rectangleImage2}
+                resizeMode="contain"
+              />
+              <View style={styles.textContainer}>
+                <Text style={styles.gameTitle}>PEGA BANANA</Text>
+                <Text style={styles.gameSubtitle}>Jogo de memória divertido</Text>
+              </View>
+            </LinearGradient>
           </TouchableOpacity>
 
-          {/* Segundo retângulo - AGORA CLICÁVEL */}
-          <TouchableOpacity 
-            style={[styles.rectangle, styles.rectangle2]}
-            onPress={handlePressGame2}
-            activeOpacity={0.8}
-          >
-            <Image 
-              source={require('../assets/monk2.png')}
-              style={styles.rectangleImage}
-              resizeMode="contain"
-            />
-            <View style={styles.textContainer}>
-              <Text style={styles.gameTitle}>CORRIDA MALUCA</Text>
-              <Text style={styles.gameSubtitle}>Teste seus reflexos</Text>
-            </View>
+          {/* === Retângulo 2 === */}
+          <TouchableOpacity onPress={handlePressGame2} activeOpacity={0.8}>
+            <LinearGradient
+              colors={['#C884FF', '#784F99']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={[styles.rectangle, styles.rectangle2]}
+            >
+              <Image 
+                source={require('../assets/monk2.png')}
+                style={styles.rectangleImage}
+                resizeMode="contain"
+              />
+              <View style={styles.textContainer}>
+                <Text style={styles.gameTitle}>CORRIDA MALUCA</Text>
+                <Text style={styles.gameSubtitle}>Teste seus reflexos</Text>
+              </View>
+            </LinearGradient>
           </TouchableOpacity>
 
-          {/* Terceiro retângulo - AGORA CLICÁVEL */}
-          <TouchableOpacity 
-            style={[styles.rectangle, styles.rectangle3]}
-            onPress={handlePressGame3}
-            activeOpacity={0.8}
-          >
-            <Image 
-              source={require('../assets/monk3.png')}
-              style={styles.rectangleImage}
-              resizeMode="contain"
-            />
-            <View style={styles.textContainer}>
-              <Text style={styles.gameTitle}>DESAFIO ULTRA</Text>
-              <Text style={styles.gameSubtitle}>Modo difícil expert</Text>
-            </View>
+          {/* === Retângulo 3 === */}
+          <TouchableOpacity onPress={handlePressGame3} activeOpacity={0.8}>
+            <LinearGradient
+              colors={['#C884FF', '#784F99']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={[styles.rectangle, styles.rectangle3]}
+            >
+              <Image 
+                source={require('../assets/monk3.png')}
+                style={styles.rectangleImage}
+                resizeMode="contain"
+              />
+              <View style={styles.textContainer}>
+                <Text style={styles.gameTitle}>DESAFIO ULTRA</Text>
+                <Text style={styles.gameSubtitle}>Modo difícil expert</Text>
+              </View>
+            </LinearGradient>
           </TouchableOpacity>
 
         </View>
@@ -107,14 +116,8 @@ export default function MemoryGame({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#000000',
-  },
-  safeArea: {
-    backgroundColor: '#2d004d',
-  },
-  // 🔥 HEADER FIXA NO TOPO - MESMA ESTRUTURA DAS OUTRAS TELAS
+  container: { flex: 1, backgroundColor: '#000000' },
+  safeArea: { backgroundColor: '#2d004d' },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -124,9 +127,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#2d004d',
     borderBottomWidth: 2,
     borderBottomColor: '#8b5cf6',
+    marginTop: 20,
   },
   backButton: {
-    padding: 8,
+    padding: 2,
     borderRadius: 20,
     backgroundColor: 'rgba(139, 92, 246, 0.3)',
     width: 40,
@@ -139,9 +143,6 @@ const styles = StyleSheet.create({
     fontSize: 26,
     fontWeight: 'bold',
     textAlign: 'center',
-    textAlignVertical: 'center',
-    lineHeight: 21,
-    includeFontPadding: false,
   },
   headerTitle: {
     color: '#ffffff',
@@ -150,38 +151,23 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     flex: 1,
   },
-  headerSpacer: {
-    width: 40,
-  },
-  content: {
-    flex: 1,
-  },
-  titleContainer: {
-    paddingTop: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    textAlign: 'center',
-  },
+  headerSpacer: { width: 40 },
+  content: { flex: 1 },
   rectanglesContainer: {
     flex: 1,
     justifyContent: 'space-around',
     alignItems: 'center',
-    paddingVertical: 20, // ✅ REDUZIDO PARA COMPENSAR A HEADER
+    paddingVertical: 20,
   },
   rectangle: {
     width: 350,
     height: 180,
     borderRadius: 16,
-    borderWidth: 3,
+    borderWidth: 2,
+    
     flexDirection: 'row',
     alignItems: 'center',
-    paddingLeft: 20,
-    paddingRight: 20,
+    paddingHorizontal: 20,
   },
   rectangleImage: {
     width: 250,
@@ -216,16 +202,7 @@ const styles = StyleSheet.create({
     textAlign: 'left',
     fontStyle: 'italic',
   },
-  rectangle1: {
-    backgroundColor: '#7B1FA2',
-    borderColor: '#7B1FA2',
-  },
-  rectangle2: {
-    backgroundColor: '#7B1FA2',
-    borderColor: '#8E24AA',
-  },
-  rectangle3: {
-    backgroundColor: '#7B1FA2',
-    borderColor: '#8E24AA',
-  },
+  rectangle1: {},
+  rectangle2: {},
+  rectangle3: {},
 });

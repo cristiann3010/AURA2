@@ -11,6 +11,12 @@ import React from 'react';
 import jogo1 from "./Screens/jogo1";
 import jogo2 from "./Screens/jogo2";
 import jogo3 from "./Screens/jogo3";
+import jogo4 from "./Screens/jogo4";
+import jogo5 from "./Screens/jogo5";
+import jogo6 from "./Screens/jogo6";
+import jogo7 from "./Screens/jogo7";
+import jogo8 from "./Screens/jogo8";
+import jogo9 from "./Screens/jogo9";
 import game1 from "./Screens/game1";
 import game2 from "./Screens/game2";
 import game3 from "./Screens/game3";
@@ -86,6 +92,11 @@ export default function App() {
           options={{ title: 'jogo da memoria' }}
         />
         <Stack.Screen 
+          name="Jogo5" 
+          component={jogo5}
+          options={{ title: 'jogo da memoria' }}
+        />
+        <Stack.Screen 
           name="Jogo2" 
           component={jogo2}
           options={{ title: 'Espermatozoides' }}
@@ -96,6 +107,32 @@ export default function App() {
           component={jogo3}
           options={{ title: 'Reflexo Rápido' }}
         />
+        <Stack.Screen 
+          name="Jogo4" 
+          component={jogo4}
+          options={{ title: 'jogo das fromas' }}
+        />
+        <Stack.Screen 
+          name="Jogo6" 
+          component={jogo6}
+          options={{ title: 'jogo do elefante' }}
+        />
+        <Stack.Screen 
+          name="Jogo7" 
+          component={jogo7}
+          options={{ title: 'jogo do elefante' }}
+        />
+        <Stack.Screen 
+          name="Jogo8" 
+          component={jogo8}
+          options={{ title: 'Toque na Coruja!' }}
+        />
+        <Stack.Screen 
+          name="Jogo9" 
+          component={jogo9}
+          options={{ title: 'Advinhação Mágica' }}
+        />
+        
       </Stack.Navigator>
     </NavigationContainer>
   );

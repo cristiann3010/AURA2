@@ -157,7 +157,7 @@ export default function MemoryGame({ navigation }) {
 
   return (
     <ImageBackground 
-      source={require('../assets/backelefante.png')} 
+      source={require('../assets/batata.jpeg')} 
       style={styles.backgroundImage}
       resizeMode="cover"
     >
@@ -226,6 +226,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#2d004d',
     borderBottomWidth: 2,
     borderBottomColor: '#8b5cf6',
+    marginTop: 30,
   },
   backButton: {
     padding: 8,

@@ -34,8 +34,6 @@ export default function Furry1({ route, navigation }) {
     async function loadFont() {
       try {
         await Font.loadAsync({
-          'LilitaOne': require('../fonts/LilitaOne-Regular.ttf'),
-          'Kodchasan': require('../fonts/Kodchasan-Regular.ttf'),
         });
         setFontLoaded(true);
       } catch (error) {
@@ -96,7 +94,7 @@ export default function Furry1({ route, navigation }) {
           >
             <Text style={styles.backButtonText}>←</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Carta Furry 1</Text>
+          <Text style={styles.headerTitle}>Cocofanto</Text>
           <View style={styles.headerSpacer} />
         </View>
       </SafeAreaView>
@@ -277,6 +275,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#2d004d',
     borderBottomWidth: 2,
     borderBottomColor: '#8b5cf6',
+    marginTop: 30,
     // ✅ REMOVIDA A MARGEM QUE CAUSAVA PROBLEMAS
   },
   backButton: {
@@ -354,7 +353,7 @@ const styles = StyleSheet.create({
     width: '60%',
     alignItems: 'center',
     gap: 15,
-    marginBottom: 1.0,
+    marginBottom: 50,
     shadowColor: '#1D6E9A',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.5,
@@ -385,7 +384,7 @@ const styles = StyleSheet.create({
     textShadowColor: 'rgba(0, 0, 0, 0.8)',
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 3,
-    fontFamily: 'LilitaOne',
+    
   },
   scanInfo: {
     backgroundColor: 'rgba(179, 102, 255, 0.3)',
@@ -398,7 +397,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 14,
     fontWeight: 'bold',
-    fontFamily: 'LilitaOne',
+    
   },
   modalOverlay: {
     flex: 1,
@@ -435,7 +434,7 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 20,
     fontWeight: 'bold',
-    fontFamily: 'LilitaOne',
+    
     flex: 1,
     textAlign: 'center',
   },
@@ -474,13 +473,13 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 8,
-    fontFamily: 'LilitaOne',
+    
   },
   sectionText: {
     color: '#e6ccff',
     fontSize: 14,
     lineHeight: 20,
-    fontFamily: 'LilitaOne',
+    
   },
   finalSection: {
     backgroundColor: 'rgba(139, 92, 246, 0.3)',
@@ -493,6 +492,5 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 16,
     fontWeight: 'bold',
-    fontFamily: 'LilitaOne',
   },
 });
