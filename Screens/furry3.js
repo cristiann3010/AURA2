@@ -1,4 +1,4 @@
-// furry1.js - VERSÃO COM HEADER FIXA NO TOPO
+// furry3.js - VERSÃO COM MODAL ARRUMADO
 import React, { useState, useEffect, useRef } from "react";
 import { 
   View, 
@@ -19,7 +19,7 @@ import * as Font from 'expo-font';
 
 const { width, height } = Dimensions.get('window');
 
-export default function Furry1({ route, navigation }) {
+export default function Furry3({ route, navigation }) {
   const { cartaId, scannedFromQR } = route.params || {};
   const [showSobre, setShowSobre] = useState(false);
   const [fontLoaded, setFontLoaded] = useState(false);
@@ -85,7 +85,6 @@ export default function Furry1({ route, navigation }) {
     >
       <StatusBar backgroundColor="#2d004d" barStyle="light-content" />
       
-      {/* ESTRUTURA FIXA NO TOPO - MESMA DA TELA SCAN */}
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.header}>
           <TouchableOpacity 
@@ -99,9 +98,7 @@ export default function Furry1({ route, navigation }) {
         </View>
       </SafeAreaView>
 
-      {/* CONTEÚDO PRINCIPAL */}
       <View style={styles.content}>
-        {/* === FORMAS GEOMÉTRICAS NO FUNDO === */}
         <Image
           source={require('../assets/monkgeo.png')}
           style={styles.shapesBackground}
@@ -110,9 +107,7 @@ export default function Furry1({ route, navigation }) {
 
         <Animated.View style={[styles.mainContent, { opacity: fadeAnim }]}>
           
-          {/* === MACACO MUITO GRANDE COM RETÂNGULO VISÍVEL ATRÁS === */}
           <View style={styles.elephantMainContainer}>
-            {/* Retângulo azul ATRÁS do macaco */}
             <View style={styles.rectangleContainer}>
               <Image
                 source={require('../assets/bgdoele.png')}
@@ -120,7 +115,6 @@ export default function Furry1({ route, navigation }) {
                 resizeMode="contain"
               />
             </View>
-            {/* Macaco MUITO GRANDE em cima do retângulo */}
             <Image
               source={require('../assets/owlfoda.png')}
               style={styles.elephantImage}
@@ -128,10 +122,8 @@ export default function Furry1({ route, navigation }) {
             />
           </View>
 
-          {/* === BOTÕES COM GRADIENTE === */}
           <View style={styles.buttonsContainer}>
             
-            {/* BOTÃO 1 - APRENDER */}
             <Animated.View 
               style={[
                 styles.buttonWrapper,
@@ -153,7 +145,6 @@ export default function Furry1({ route, navigation }) {
               </TouchableOpacity>
             </Animated.View>
 
-            {/* BOTÃO 3 - INFORMAÇÕES */}
             <Animated.View 
               style={[
                 styles.buttonWrapper,
@@ -183,18 +174,18 @@ export default function Furry1({ route, navigation }) {
           )}
         </Animated.View>
 
-        {/* === MODAL INFORMAÇÕES === */}
+        {/* === MODAL INFORMAÇÕES ARRUMADO === */}
         <Modal
           visible={showSobre}
           transparent={true}
-          animationType="slide"
+          animationType="fade"
           onRequestClose={() => setShowSobre(false)}
         >
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
               
               <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>SOBRE O MACACO</Text>
+                <Text style={styles.modalTitle}>🦉 CORUJA</Text>
                 <TouchableOpacity 
                   style={styles.closeButton}
                   onPress={() => setShowSobre(false)}
@@ -205,33 +196,44 @@ export default function Furry1({ route, navigation }) {
 
               <ScrollView 
                 style={styles.modalScroll}
-                contentContainerStyle={styles.modalScrollContent}
+                showsVerticalScrollIndicator={false}
               >
                 <View style={styles.modalBody}>
                   
-                  <View style={styles.infoSection}>
-                    <Text style={styles.sectionTitle}>🐵 Características do Macaco</Text>
-                    <Text style={styles.sectionText}>
-                      • Animais sociais e inteligentes{"\n"}
-                      • Excelente habilidade de escalada{"\n"}
-                      • Vivem em grupos familiares{"\n"}
-                      • Comunicativos e curiosos
+                  <View style={styles.infoCard}>
+                    <Text style={styles.cardTitle}>🌟 Características</Text>
+                    <Text style={styles.cardText}>
+                      • Aves noturnas e silenciosas{'\n'}
+                      • Excelente visão na escuridão{'\n'}
+                      • Podem girar a cabeça 270°{'\n'}
+                      • Voo completamente silencioso
                     </Text>
                   </View>
 
-                  <View style={styles.infoSection}>
-                    <Text style={styles.sectionTitle}>🌴 Habitat Natural</Text>
-                    <Text style={styles.sectionText}>
-                      • Florestas tropicais{"\n"}
-                      • Áreas arborizadas{"\n"}
-                      • Montanhas e planícies{"\n"}
-                      • Zonas com vegetação densa
+                  <View style={styles.infoCard}>
+                    <Text style={styles.cardTitle}>🏠 Onde Vivem</Text>
+                    <Text style={styles.cardText}>
+                      • Florestas e bosques{'\n'}
+                      • Áreas com muitas árvores{'\n'}
+                      • Montanhas e vales{'\n'}
+                      • Até em cidades!
                     </Text>
                   </View>
 
-                  <View style={styles.finalSection}>
-                    <Text style={styles.finalText}>
-                      Descubra mais sobre este incrível animal!
+                  <View style={styles.infoCard}>
+                    <Text style={styles.cardTitle}>🍖 Alimentação</Text>
+                    <Text style={styles.cardText}>
+                      • Caçam à noite{'\n'}
+                      • Comem ratos e pequenos animais{'\n'}
+                      • Insetos e pássaros pequenos{'\n'}
+                      • Engolem a presa inteira
+                    </Text>
+                  </View>
+
+                  <View style={styles.funFact}>
+                    <Text style={styles.funFactTitle}>💡 Curiosidade!</Text>
+                    <Text style={styles.funFactText}>
+                      As corujas têm penas especiais que tornam seu voo totalmente silencioso! Assim elas conseguem caçar sem fazer barulho! 🦉✨
                     </Text>
                   </View>
 
@@ -265,7 +267,6 @@ const styles = StyleSheet.create({
   safeArea: {
     backgroundColor: '#2d004d',
   },
-  // 🔥 HEADER FIXA NO TOPO - MESMA ESTRUTURA DA TELA SCAN
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -276,7 +277,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 2,
     borderBottomColor: '#8b5cf6',
     marginTop: 30,
-    // ✅ REMOVIDA A MARGEM QUE CAUSAVA PROBLEMAS
   },
   backButton: {
     padding: 8,
@@ -314,7 +314,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 20,
-    paddingTop: 20, // ✅ REDUZIDO PARA COMPENSAR A HEADER FIXA
+    paddingTop: 20,
     paddingBottom: 30,
   },
   shapesBackground: {
@@ -384,7 +384,6 @@ const styles = StyleSheet.create({
     textShadowColor: 'rgba(0, 0, 0, 0.8)',
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 3,
-    
   },
   scanInfo: {
     backgroundColor: 'rgba(179, 102, 255, 0.3)',
@@ -397,100 +396,96 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 14,
     fontWeight: 'bold',
-    
   },
+  // === MODAL ARRUMADO ===
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.85)',
-    justifyContent: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+    justifyContent: 'flex-end',
     alignItems: 'center',
-    padding: 15,
+    paddingBottom: 20,
   },
   modalContent: {
     backgroundColor: '#1a0033',
-    borderRadius: 20,
+    borderRadius: 25,
     borderWidth: 3,
     borderColor: '#8b5cf6',
-    width: '90%',
-    maxHeight: '80%',
-    shadowColor: '#a78bfa',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 15,
-    elevation: 15,
+    width: '95%',
+    height: '75%',
+    overflow: 'hidden',
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 18,
+    padding: 20,
     backgroundColor: '#2d004d',
-    borderTopLeftRadius: 17,
-    borderTopRightRadius: 17,
     borderBottomWidth: 2,
     borderBottomColor: '#8b5cf6',
   },
   modalTitle: {
     color: '#ffffff',
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: 'bold',
-    
     flex: 1,
     textAlign: 'center',
   },
   closeButton: {
     backgroundColor: '#8b5cf6',
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
   },
   closeButtonText: {
     color: '#ffffff',
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
   },
   modalScroll: {
     flex: 1,
   },
-  modalScrollContent: {
-    padding: 20,
-    paddingBottom: 25,
-  },
   modalBody: {
-    gap: 16,
+    padding: 20,
+    gap: 15,
   },
-  infoSection: {
-    backgroundColor: 'rgba(139, 92, 246, 0.2)',
-    padding: 16,
-    borderRadius: 12,
+  infoCard: {
+    backgroundColor: 'rgba(139, 92, 246, 0.25)',
+    padding: 18,
+    borderRadius: 15,
     borderLeftWidth: 4,
-    borderLeftColor: '#a78bfa',
+    borderLeftColor: '#8b5cf6',
   },
-  sectionTitle: {
+  cardTitle: {
     color: '#ffffff',
     fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 8,
-   
+    marginBottom: 10,
   },
-  sectionText: {
+  cardText: {
     color: '#e6ccff',
-    fontSize: 14,
-    lineHeight: 20,
-    
+    fontSize: 15,
+    lineHeight: 24,
   },
-  finalSection: {
-    backgroundColor: 'rgba(139, 92, 246, 0.3)',
-    padding: 20,
+  funFact: {
+    backgroundColor: 'rgba(93, 178, 224, 0.2)',
+    padding: 18,
     borderRadius: 15,
-    alignItems: 'center',
-    marginTop: 10,
+    borderWidth: 2,
+    borderColor: '#5DB2E0',
+    marginTop: 5,
+    marginBottom: 20,
   },
-  finalText: {
+  funFactTitle: {
     color: '#ffffff',
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  funFactText: {
+    color: '#ffffff',
+    fontSize: 15,
+    lineHeight: 22,
   },
 });

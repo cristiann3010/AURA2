@@ -4,7 +4,9 @@ import {
   Text, 
   StyleSheet, 
   TouchableOpacity,
-  SafeAreaView
+  SafeAreaView,
+  ImageBackground,
+  StatusBar
 } from "react-native";
 
 export default function Jogo8({ navigation }) {
@@ -57,33 +59,41 @@ export default function Jogo8({ navigation }) {
   }, [gameActive]);
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity 
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Text style={styles.backButtonText}>← Voltar</Text>
-        </TouchableOpacity>
-        
-        <Text style={styles.title}>Toque na Coruja</Text>
-        
-        <View style={styles.placeholder} />
+    <View style={styles.container}>
+      <StatusBar backgroundColor="#2d004d" barStyle="light-content" />
+      
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.header}>
+          <TouchableOpacity 
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Text style={styles.backButtonText}>←</Text>
+          </TouchableOpacity>
+          
+          <Text style={styles.title}>🦉 Toque na Coruja</Text>
+          
+          <View style={styles.headerSpacer} />
+        </View>
+      </SafeAreaView>
+
+      <View style={styles.infoPanel}>
+        <View style={styles.infoItem}>
+          <Text style={styles.infoLabel}>TEMPO</Text>
+          <Text style={styles.infoValue}>{timeLeft}s</Text>
+        </View>
+        <View style={styles.infoItem}>
+          <Text style={styles.infoLabel}>PONTOS</Text>
+          <Text style={styles.infoValue}>{score}</Text>
+        </View>
       </View>
 
-      <View style={styles.content}>
-        <View style={styles.infoPanel}>
-          <View style={styles.infoItem}>
-            <Text style={styles.infoLabel}>Tempo</Text>
-            <Text style={styles.infoValue}>{timeLeft}s</Text>
-          </View>
-          <View style={styles.infoItem}>
-            <Text style={styles.infoLabel}>Pontos</Text>
-            <Text style={styles.infoValue}>{score}</Text>
-          </View>
-        </View>
-
-        <View style={styles.gameArea}>
+      <ImageBackground
+        source={require('../assets/batata.jpeg')}
+        style={styles.gameArea}
+        resizeMode="cover"
+      >
+        <View style={styles.gameOverlay}>
           {showOwl && gameActive && (
             <TouchableOpacity 
               style={[
@@ -100,10 +110,11 @@ export default function Jogo8({ navigation }) {
           )}
 
           {!gameActive && timeLeft === 10 && (
-            <View style={styles.message}>
+            <View style={styles.startScreen}>
+              <Text style={styles.owlLarge}>🦉</Text>
               <Text style={styles.messageTitle}>Toque na Coruja!</Text>
               <Text style={styles.messageText}>
-                A coruja vai pular pela tela
+                A coruja vai pular pela tela{'\n'}
                 Toque nela para ganhar pontos!
               </Text>
               <TouchableOpacity 
@@ -116,9 +127,13 @@ export default function Jogo8({ navigation }) {
           )}
 
           {!gameActive && timeLeft === 0 && (
-            <View style={styles.message}>
+            <View style={styles.startScreen}>
+              <Text style={styles.owlLarge}>🎉</Text>
               <Text style={styles.messageTitle}>Fim do Jogo!</Text>
               <Text style={styles.messageScore}>Pontuação: {score}</Text>
+              <Text style={styles.messageSubtext}>
+                {score >= 15 ? '🏆 Incrível!' : score >= 10 ? '⭐ Muito bem!' : '💪 Tente novamente!'}
+              </Text>
               <TouchableOpacity 
                 style={styles.button}
                 onPress={startGame}
@@ -128,14 +143,14 @@ export default function Jogo8({ navigation }) {
             </View>
           )}
         </View>
+      </ImageBackground>
 
-        <View style={styles.instructions}>
-          <Text style={styles.instructionsText}>
-            ⚡ Toque na coruja o mais rápido que puder!
-          </Text>
-        </View>
+      <View style={styles.instructions}>
+        <Text style={styles.instructionsText}>
+          ⚡ Toque na coruja o mais rápido que puder!
+        </Text>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -143,6 +158,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#1a0033",
+  },
+  safeArea: {
+    backgroundColor: '#2d004d',
   },
   header: {
     flexDirection: 'row',
@@ -153,65 +171,77 @@ const styles = StyleSheet.create({
     backgroundColor: '#2d004d',
     borderBottomWidth: 2,
     borderBottomColor: '#8b5cf6',
+    marginTop: 30,
   },
   backButton: {
     padding: 8,
+    borderRadius: 20,
+    backgroundColor: 'rgba(139, 92, 246, 0.3)',
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   backButtonText: {
-    color: '#a78bfa',
-    fontSize: 16,
+    color: '#ffffff',
+    fontSize: 26,
     fontWeight: 'bold',
+    textAlign: 'center',
+    textAlignVertical: 'center',
+    lineHeight: 21,
+    includeFontPadding: false,
   },
   title: {
     color: '#e9d5ff',
     fontSize: 20,
     fontWeight: 'bold',
-  },
-  placeholder: {
-    width: 60,
-  },
-  content: {
     flex: 1,
-    alignItems: 'center',
-    padding: 20,
+    textAlign: 'center',
+  },
+  headerSpacer: {
+    width: 40,
   },
   infoPanel: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    width: '100%',
-    backgroundColor: 'rgba(139, 92, 246, 0.2)',
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: '#8b5cf6',
+    alignItems: 'center',
+    padding: 12,
+    backgroundColor: 'rgba(45, 0, 77, 0.9)',
+    margin: 15,
+    marginTop: 10,
+    borderRadius: 15,
+    borderWidth: 2,
+    borderColor: 'rgba(139, 92, 246, 0.5)',
   },
   infoItem: {
     alignItems: 'center',
   },
   infoLabel: {
     color: '#c4b5fd',
-    fontSize: 14,
+    fontSize: 10,
     fontWeight: 'bold',
-    marginBottom: 5,
+    marginBottom: 3,
   },
   infoValue: {
-    color: '#e9d5ff',
-    fontSize: 22,
+    color: '#8b5cf6',
+    fontSize: 18,
     fontWeight: 'bold',
   },
   gameArea: {
-    width: '100%',
-    height: 400,
-    backgroundColor: 'rgba(139, 92, 246, 0.1)',
-    borderRadius: 10,
-    borderWidth: 2,
+    flex: 1,
+    marginHorizontal: 15,
+    marginBottom: 15,
+    borderRadius: 20,
+    borderWidth: 3,
     borderColor: '#8b5cf6',
-    marginBottom: 20,
+    overflow: 'hidden',
+  },
+  gameOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(26, 0, 51, 0.3)',
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
-    overflow: 'hidden',
   },
   owl: {
     position: 'absolute',
@@ -227,13 +257,22 @@ const styles = StyleSheet.create({
   owlEmoji: {
     fontSize: 40,
   },
-  message: {
+  startScreen: {
     alignItems: 'center',
-    padding: 20,
+    padding: 30,
+    backgroundColor: 'rgba(45, 0, 77, 0.95)',
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: '#8b5cf6',
+    marginHorizontal: 20,
+  },
+  owlLarge: {
+    fontSize: 70,
+    marginBottom: 15,
   },
   messageTitle: {
     color: '#e9d5ff',
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
     marginBottom: 10,
     textAlign: 'center',
@@ -242,31 +281,41 @@ const styles = StyleSheet.create({
     color: '#c4b5fd',
     fontSize: 16,
     textAlign: 'center',
-    marginBottom: 20,
-    lineHeight: 20,
+    marginBottom: 25,
+    lineHeight: 22,
   },
   messageScore: {
     color: '#e9d5ff',
-    fontSize: 20,
-    marginBottom: 20,
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  messageSubtext: {
+    color: '#a78bfa',
+    fontSize: 18,
+    marginBottom: 25,
   },
   button: {
     backgroundColor: '#8b5cf6',
-    paddingHorizontal: 30,
-    paddingVertical: 15,
-    borderRadius: 10,
+    paddingHorizontal: 60,
+    paddingVertical: 18,
+    borderRadius: 25,
+    borderWidth: 3,
+    borderColor: '#a78bfa',
   },
   buttonText: {
     color: '#ffffff',
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: 'bold',
+    letterSpacing: 1,
   },
   instructions: {
-    backgroundColor: 'rgba(139, 92, 246, 0.2)',
+    backgroundColor: 'rgba(45, 0, 77, 0.9)',
     padding: 15,
-    borderRadius: 10,
-    width: '100%',
-    borderWidth: 1,
+    marginHorizontal: 15,
+    marginBottom: 15,
+    borderRadius: 15,
+    borderWidth: 2,
     borderColor: '#8b5cf6',
   },
   instructionsText: {

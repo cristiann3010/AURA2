@@ -5,7 +5,9 @@ import {
   StyleSheet, 
   TouchableOpacity,
   SafeAreaView,
-  Modal
+  Modal,
+  ImageBackground,
+  StatusBar
 } from "react-native";
 
 export default function Jogo3({ navigation }) {
@@ -146,90 +148,105 @@ export default function Jogo3({ navigation }) {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity 
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Text style={styles.backButtonText}>← Voltar</Text>
-        </TouchableOpacity>
-        
-        <Text style={styles.title}>Jogo da Velha</Text>
-        
-        <TouchableOpacity 
-          style={styles.resetButton}
-          onPress={resetGame}
-        >
-          <Text style={styles.resetButtonText}>🔄</Text>
-        </TouchableOpacity>
+    <View style={styles.container}>
+      <StatusBar backgroundColor="#2d004d" barStyle="light-content" />
+      
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.header}>
+          <TouchableOpacity 
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Text style={styles.backButtonText}>←</Text>
+          </TouchableOpacity>
+          
+          <Text style={styles.title}>🦉 Jogo da Velha</Text>
+          
+          <TouchableOpacity 
+            style={styles.resetButton}
+            onPress={resetGame}
+          >
+            <Text style={styles.resetButtonText}>🔄</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+
+      <View style={styles.scoreBoard}>
+        <View style={styles.scoreItem}>
+          <Text style={styles.scoreLabel}>VOCÊ</Text>
+          <Text style={styles.scoreValue}>{score.player}</Text>
+        </View>
+        <View style={styles.scoreItem}>
+          <Text style={styles.scoreLabel}>EMPATES</Text>
+          <Text style={styles.scoreValue}>{score.draws}</Text>
+        </View>
+        <View style={styles.scoreItem}>
+          <Text style={styles.scoreLabel}>LUA</Text>
+          <Text style={styles.scoreValue}>{score.bot}</Text>
+        </View>
       </View>
 
-      <View style={styles.content}>
-        <View style={styles.scoreBoard}>
-          <View style={styles.scoreItem}>
-            <Text style={styles.scoreLabel}>Você</Text>
-            <Text style={styles.scoreValue}>{score.player}</Text>
-          </View>
-          <View style={styles.scoreItem}>
-            <Text style={styles.scoreLabel}>Empates</Text>
-            <Text style={styles.scoreValue}>{score.draws}</Text>
-          </View>
-          <View style={styles.scoreItem}>
-            <Text style={styles.scoreLabel}>Lua</Text>
-            <Text style={styles.scoreValue}>{score.bot}</Text>
-          </View>
-        </View>
-
-        <View style={styles.statusContainer}>
-          <Text style={styles.statusText}>{getStatusMessage()}</Text>
-        </View>
-
-        <View style={styles.board}>
-          <View style={styles.row}>
-            {renderCell(0)}
-            {renderCell(1)}
-            {renderCell(2)}
-          </View>
-          <View style={styles.row}>
-            {renderCell(3)}
-            {renderCell(4)}
-            {renderCell(5)}
-          </View>
-          <View style={styles.row}>
-            {renderCell(6)}
-            {renderCell(7)}
-            {renderCell(8)}
-          </View>
-        </View>
-
-        {!gameStarted && (
-          <View style={styles.startOverlay}>
-            <View style={styles.startContent}>
-              <Text style={styles.emojiLarge}>🦉</Text>
-              <Text style={styles.startTitle}>Jogo da Velha</Text>
-              <TouchableOpacity 
-                style={styles.startButton}
-                onPress={startGame}
-              >
-                <Text style={styles.startButtonText}>INICIAR JOGO</Text>
-              </TouchableOpacity>
+      <ImageBackground
+        source={require('../assets/batata.jpeg')}
+        style={styles.gameArea}
+        resizeMode="cover"
+      >
+        <View style={styles.gameOverlay}>
+          <View style={styles.content}>
+            <View style={styles.statusContainer}>
+              <Text style={styles.statusText}>{getStatusMessage()}</Text>
             </View>
-          </View>
-        )}
 
-        {/* REMOVIDO O BOTÃO DUPLICADO - AGORA SÓ APARECE O BOTÃO "NOVO JOGO" DURANTE O JOGO */}
-        {gameStarted && (
-          <View style={styles.controls}>
-            <TouchableOpacity 
-              style={styles.controlButton}
-              onPress={newGame}
-            >
-              <Text style={styles.controlButtonText}>NOVO JOGO</Text>
-            </TouchableOpacity>
+            <View style={styles.board}>
+              <View style={styles.row}>
+                {renderCell(0)}
+                {renderCell(1)}
+                {renderCell(2)}
+              </View>
+              <View style={styles.row}>
+                {renderCell(3)}
+                {renderCell(4)}
+                {renderCell(5)}
+              </View>
+              <View style={styles.row}>
+                {renderCell(6)}
+                {renderCell(7)}
+                {renderCell(8)}
+              </View>
+            </View>
+
+            {!gameStarted && (
+              <View style={styles.startOverlay}>
+                <View style={styles.startContent}>
+                  <Text style={styles.emojiLarge}>🦉</Text>
+                  <Text style={styles.startTitle}>Jogo da Velha</Text>
+                  <Text style={styles.startDescription}>
+                    Você é a Coruja 🦉{'\n'}
+                    Jogue contra a Lua 🌙
+                  </Text>
+                  <TouchableOpacity 
+                    style={styles.startButton}
+                    onPress={startGame}
+                  >
+                    <Text style={styles.startButtonText}>COMEÇAR</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+
+            {gameStarted && (
+              <View style={styles.controls}>
+                <TouchableOpacity 
+                  style={styles.controlButton}
+                  onPress={newGame}
+                >
+                  <Text style={styles.controlButtonText}>NOVO JOGO</Text>
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
-        )}
-      </View>
+        </View>
+      </ImageBackground>
 
       <Modal visible={showGameOverModal} transparent={true} animationType="fade">
         <View style={styles.modalContainer}>
@@ -268,7 +285,7 @@ export default function Jogo3({ navigation }) {
           </View>
         </View>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -276,6 +293,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#1a0033",
+  },
+  safeArea: {
+    backgroundColor: '#2d004d',
   },
   header: {
     flexDirection: 'row',
@@ -286,64 +306,100 @@ const styles = StyleSheet.create({
     backgroundColor: '#2d004d',
     borderBottomWidth: 2,
     borderBottomColor: '#8b5cf6',
+    marginTop: 30,
   },
   backButton: {
     padding: 8,
+    borderRadius: 20,
+    backgroundColor: 'rgba(139, 92, 246, 0.3)',
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   backButtonText: {
-    color: '#a78bfa',
-    fontSize: 16,
+    color: '#ffffff',
+    fontSize: 26,
     fontWeight: 'bold',
+    textAlign: 'center',
+    textAlignVertical: 'center',
+    lineHeight: 21,
+    includeFontPadding: false,
   },
   title: {
     color: '#e9d5ff',
     fontSize: 20,
     fontWeight: 'bold',
+    flex: 1,
+    textAlign: 'center',
   },
   resetButton: {
     padding: 8,
+    borderRadius: 20,
+    backgroundColor: 'rgba(139, 92, 246, 0.3)',
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   resetButtonText: {
-    color: '#a78bfa',
-    fontSize: 18,
-  },
-  content: {
-    flex: 1,
-    alignItems: 'center',
-    padding: 20,
+    color: '#ffffff',
+    fontSize: 20,
   },
   scoreBoard: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    width: '100%',
-    backgroundColor: 'rgba(139, 92, 246, 0.2)',
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: '#8b5cf6',
+    alignItems: 'center',
+    padding: 12,
+    backgroundColor: 'rgba(45, 0, 77, 0.9)',
+    margin: 15,
+    marginTop: 10,
+    borderRadius: 15,
+    borderWidth: 2,
+    borderColor: 'rgba(139, 92, 246, 0.5)',
   },
   scoreItem: {
     alignItems: 'center',
   },
   scoreLabel: {
     color: '#c4b5fd',
-    fontSize: 12,
+    fontSize: 10,
     fontWeight: 'bold',
-    marginBottom: 5,
+    marginBottom: 3,
   },
   scoreValue: {
-    color: '#e9d5ff',
-    fontSize: 20,
+    color: '#8b5cf6',
+    fontSize: 18,
     fontWeight: 'bold',
   },
+  gameArea: {
+    flex: 1,
+    marginHorizontal: 15,
+    marginBottom: 15,
+    borderRadius: 20,
+    borderWidth: 3,
+    borderColor: '#8b5cf6',
+    overflow: 'hidden',
+  },
+  gameOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(26, 0, 51, 0.3)',
+  },
+  content: {
+    flex: 1,
+    alignItems: 'center',
+    padding: 20,
+    justifyContent: 'center',
+  },
   statusContainer: {
-    backgroundColor: 'rgba(139, 92, 246, 0.3)',
+    backgroundColor: 'rgba(139, 92, 246, 0.8)',
     padding: 12,
-    borderRadius: 8,
+    borderRadius: 15,
     marginBottom: 20,
     minWidth: '80%',
     alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#8b5cf6',
   },
   statusText: {
     color: '#ffffff',
@@ -351,9 +407,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   board: {
-    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+    backgroundColor: 'rgba(45, 0, 77, 0.8)',
     padding: 10,
-    borderRadius: 10,
+    borderRadius: 15,
     borderWidth: 2,
     borderColor: '#8b5cf6',
     marginBottom: 20,
@@ -365,55 +421,65 @@ const styles = StyleSheet.create({
   cell: {
     width: 70,
     height: 70,
-    backgroundColor: 'rgba(139, 92, 246, 0.2)',
+    backgroundColor: 'rgba(139, 92, 246, 0.3)',
     margin: 4,
-    borderRadius: 8,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
     borderColor: '#8b5cf6',
   },
   playerCell: {
-    backgroundColor: 'rgba(139, 92, 246, 0.4)',
+    backgroundColor: 'rgba(139, 92, 246, 0.5)',
   },
   botCell: {
-    backgroundColor: 'rgba(139, 92, 246, 0.3)',
+    backgroundColor: 'rgba(139, 92, 246, 0.4)',
   },
   cellText: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: 'bold',
   },
   startOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(26, 0, 51, 0.95)',
+    backgroundColor: 'rgba(45, 0, 77, 0.95)',
     justifyContent: 'center',
     alignItems: 'center',
+    borderRadius: 20,
   },
   startContent: {
     alignItems: 'center',
     padding: 30,
   },
   emojiLarge: {
-    fontSize: 60,
+    fontSize: 70,
     marginBottom: 15,
   },
   startTitle: {
     color: '#e9d5ff',
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
+    marginBottom: 15,
+  },
+  startDescription: {
+    color: '#c4b5fd',
+    fontSize: 16,
+    textAlign: 'center',
     marginBottom: 30,
+    lineHeight: 24,
   },
   startButton: {
     backgroundColor: '#8b5cf6',
-    paddingHorizontal: 40,
-    paddingVertical: 15,
-    borderRadius: 10,
-    minWidth: 200,
+    paddingHorizontal: 60,
+    paddingVertical: 18,
+    borderRadius: 25,
+    borderWidth: 3,
+    borderColor: '#a78bfa',
   },
   startButtonText: {
     color: '#ffffff',
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: 'bold',
+    letterSpacing: 1,
   },
   controls: {
     width: '100%',
@@ -422,9 +488,11 @@ const styles = StyleSheet.create({
   controlButton: {
     backgroundColor: '#8b5cf6',
     padding: 15,
-    borderRadius: 10,
+    borderRadius: 15,
     alignItems: 'center',
     width: '100%',
+    borderWidth: 2,
+    borderColor: '#a78bfa',
   },
   controlButtonText: {
     color: '#ffffff',
@@ -439,27 +507,28 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     backgroundColor: '#2d004d',
-    borderRadius: 15,
+    borderRadius: 20,
     borderWidth: 2,
     borderColor: '#8b5cf6',
-    padding: 25,
+    padding: 30,
     width: '80%',
     alignItems: 'center',
   },
   modalTitle: {
     color: '#e9d5ff',
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 15,
+    marginBottom: 20,
   },
   resultContainer: {
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 25,
   },
   modalMessage: {
     color: '#ffffff',
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
+    marginTop: 10,
   },
   modalButtons: {
     width: '100%',
@@ -467,8 +536,10 @@ const styles = StyleSheet.create({
   modalButton: {
     backgroundColor: '#8b5cf6',
     padding: 15,
-    borderRadius: 10,
+    borderRadius: 15,
     alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#a78bfa',
   },
   modalButtonText: {
     color: '#ffffff',

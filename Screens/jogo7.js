@@ -10,6 +10,7 @@ import {
   Alert,
   Image,
   StatusBar,
+  ImageBackground,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -168,12 +169,7 @@ export default function Jogo7({ navigation }) {
 
       {/* Pontuação */}
       {gameActive && (
-        <LinearGradient
-          colors={['#4a7c23', '#2d5016']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.scorePanel}
-        >
+        <View style={styles.scorePanel}>
           <View style={styles.scoreItem}>
             <Text style={styles.scoreLabel}>ACERTOS</Text>
             <Text style={styles.scoreValue}>🍌 {score / 10}</Text>
@@ -186,105 +182,91 @@ export default function Jogo7({ navigation }) {
             <Text style={styles.scoreLabel}>PONTOS</Text>
             <Text style={styles.scoreValue}>{score}</Text>
           </View>
-        </LinearGradient>
+        </View>
       )}
 
-      {/* Área do Jogo */}
-      <View style={styles.gameArea}>
-        {/* Tela Inicial */}
-        {!gameActive && (
-          <LinearGradient
-            colors={['#5a8f2a', '#3d6b1a']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.startScreen}
-          >
-            <Image
-              source={require('../assets/monk3.png')}
-              style={styles.bigMonkey}
-              resizeMode="contain"
-            />
-            <Text style={styles.startTitle}>Conte as Bananas!</Text>
-            <Text style={styles.startDescription}>
-              Conte quantas bananas aparecem{'\n'}
-              e toque no número certo! 🍌
-            </Text>
-            
-            <View style={styles.legendBox}>
-              <Text style={styles.legendTitle}>Como jogar:</Text>
-              <Text style={styles.legendItem}>👀 Olhe as bananas</Text>
-              <Text style={styles.legendItem}>🔢 Conte quantas tem</Text>
-              <Text style={styles.legendItem}>👆 Toque no número certo!</Text>
-            </View>
-
-            <TouchableOpacity style={styles.startButton} onPress={startGame}>
-              <Text style={styles.startButtonText}>COMEÇAR</Text>
-            </TouchableOpacity>
-          </LinearGradient>
-        )}
-
-        {/* Jogo Ativo */}
-        {gameActive && (
-          <View style={styles.gameContent}>
-            {/* Macaco */}
-            <LinearGradient
-              colors={['#5a8f2a', '#3d6b1a']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.monkeyBox}
-            >
+      {/* Área do Jogo com Background */}
+      <ImageBackground
+        source={require('../assets/bgmonk.png')}
+        style={styles.gameArea}
+        resizeMode="cover"
+      >
+        <View style={styles.gameOverlay}>
+          {/* Tela Inicial */}
+          {!gameActive && (
+            <View style={styles.startScreen}>
               <Image
-                source={getMonkeyImage()}
-                style={styles.monkeyImage}
+                source={require('../assets/monk3.png')}
+                style={styles.bigMonkey}
+                resizeMode="contain"
               />
-            </LinearGradient>
-
-            {/* Mensagem */}
-            {message !== '' && (
-              <View style={[
-                styles.messageBox,
-                messageType === 'success' && styles.successBox,
-                messageType === 'error' && styles.errorBox,
-              ]}>
-                <Text style={styles.messageText}>{message}</Text>
+              <Text style={styles.startTitle}>Conte as Bananas!</Text>
+              <Text style={styles.startDescription}>
+                Conte quantas bananas aparecem{'\n'}
+                e toque no número certo! 🍌
+              </Text>
+              
+              <View style={styles.legendBox}>
+                <Text style={styles.legendTitle}>Como jogar:</Text>
+                <Text style={styles.legendItem}>👀 Olhe as bananas</Text>
+                <Text style={styles.legendItem}>🔢 Conte quantas tem</Text>
+                <Text style={styles.legendItem}>👆 Toque no número certo!</Text>
               </View>
-            )}
 
-            {/* Área das Bananas */}
-            <LinearGradient
-              colors={['#fff9e6', '#ffe066']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.bananasArea}
-            >
-              <View style={styles.bananasContainer}>
-                {renderBananas()}
-              </View>
-            </LinearGradient>
-
-            {/* Opções de Números */}
-            <View style={styles.optionsGrid}>
-              {options.map((num, index) => (
-                <TouchableOpacity
-                  key={index}
-                  style={styles.optionButton}
-                  onPress={() => handleOptionPress(num)}
-                  activeOpacity={0.7}
-                >
-                  <LinearGradient
-                    colors={['#fff9e6', '#ffe066']}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={styles.optionGradient}
-                  >
-                    <Text style={styles.optionNumber}>{num}</Text>
-                  </LinearGradient>
-                </TouchableOpacity>
-              ))}
+              <TouchableOpacity style={styles.startButton} onPress={startGame}>
+                <Text style={styles.startButtonText}>COMEÇAR</Text>
+              </TouchableOpacity>
             </View>
-          </View>
-        )}
-      </View>
+          )}
+
+          {/* Jogo Ativo */}
+          {gameActive && (
+            <View style={styles.gameContent}>
+              {/* Macaco */}
+              <View style={styles.monkeyBox}>
+                <Image
+                  source={getMonkeyImage()}
+                  style={styles.monkeyImage}
+                />
+              </View>
+
+              {/* Mensagem */}
+              {message !== '' && (
+                <View style={[
+                  styles.messageBox,
+                  messageType === 'success' && styles.successBox,
+                  messageType === 'error' && styles.errorBox,
+                ]}>
+                  <Text style={styles.messageText}>{message}</Text>
+                </View>
+              )}
+
+              {/* Área das Bananas */}
+              <View style={styles.bananasArea}>
+                <View style={styles.bananasContainer}>
+                  {renderBananas()}
+                </View>
+              </View>
+
+              {/* Opções de Números */}
+              <View style={styles.optionsGrid}>
+                {options.map((num, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={styles.optionButton}
+                    onPress={() => handleOptionPress(num)}
+                    activeOpacity={0.7}
+                  >
+                    <View style={styles.optionGradient}>
+                      <Text style={styles.optionNumber}>{num}</Text>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          )}
+        </View>
+      </ImageBackground>
     </View>
   );
 }
@@ -292,7 +274,7 @@ export default function Jogo7({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1a3d0c',
+    backgroundColor: '#1a4d2e',
   },
   safeArea: {
     backgroundColor: '#2d004d',
@@ -306,10 +288,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#2d004d',
     borderBottomWidth: 2,
     borderBottomColor: '#8b5cf6',
-    marginTop: 20,
+    marginTop: 30,
   },
   backButton: {
-    padding: 2,
+    padding: 8,
     borderRadius: 20,
     backgroundColor: 'rgba(139, 92, 246, 0.3)',
     width: 40,
@@ -322,10 +304,13 @@ const styles = StyleSheet.create({
     fontSize: 26,
     fontWeight: 'bold',
     textAlign: 'center',
+    textAlignVertical: 'center',
+    lineHeight: 21,
+    includeFontPadding: false,
   },
   headerTitle: {
     color: '#ffffff',
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: 'bold',
     textAlign: 'center',
     flex: 1,
@@ -336,42 +321,48 @@ const styles = StyleSheet.create({
   scorePanel: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    padding: 15,
-    marginHorizontal: 20,
-    marginTop: 15,
-    borderRadius: 16,
+    alignItems: 'center',
+    padding: 12,
+    backgroundColor: 'rgba(45, 95, 63, 0.9)',
+    margin: 15,
+    marginTop: 10,
+    borderRadius: 15,
     borderWidth: 2,
-    borderColor: '#8bc34a',
+    borderColor: 'rgba(139, 195, 74, 0.5)',
   },
   scoreItem: {
     alignItems: 'center',
   },
   scoreLabel: {
-    color: '#E0E0E0',
-    fontSize: 12,
+    color: '#c8e6c9',
+    fontSize: 10,
     fontWeight: 'bold',
-    marginBottom: 4,
+    marginBottom: 3,
   },
   scoreValue: {
-    color: '#ffffff',
-    fontSize: 20,
+    color: '#8bc34a',
+    fontSize: 18,
     fontWeight: 'bold',
-    textShadowColor: 'rgba(0, 0, 0, 0.5)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 2,
   },
   gameArea: {
     flex: 1,
-    margin: 20,
+    marginHorizontal: 15,
+    marginBottom: 15,
+    borderRadius: 20,
+    borderWidth: 3,
+    borderColor: '#8bc34a',
+    overflow: 'hidden',
+  },
+  gameOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.15)',
   },
   startScreen: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 20,
     padding: 30,
-    borderWidth: 2,
-    borderColor: '#8bc34a',
+    backgroundColor: 'rgba(45, 95, 63, 0.9)',
   },
   bigMonkey: {
     width: 140,
@@ -379,66 +370,58 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   startTitle: {
-    color: '#fff',
+    color: '#ffffff',
     fontSize: 28,
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 10,
-    textShadowColor: 'rgba(0, 0, 0, 0.5)',
-    textShadowOffset: { width: 2, height: 2 },
-    textShadowRadius: 3,
   },
   startDescription: {
-    color: '#E0E0E0',
-    fontSize: 18,
+    color: '#c8e6c9',
+    fontSize: 16,
     textAlign: 'center',
     marginBottom: 25,
-    lineHeight: 28,
+    lineHeight: 22,
   },
   legendBox: {
-    backgroundColor: 'rgba(0, 0, 0, 0.25)',
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
     padding: 20,
     borderRadius: 15,
     marginBottom: 30,
     width: '100%',
     borderWidth: 2,
-    borderColor: '#ffe066',
+    borderColor: '#8bc34a',
   },
   legendTitle: {
-    color: '#fff',
+    color: '#ffffff',
     fontSize: 18,
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 10,
   },
   legendItem: {
-    color: '#E0E0E0',
-    fontSize: 18,
+    color: '#c8e6c9',
+    fontSize: 16,
     textAlign: 'center',
-    marginVertical: 5,
+    marginVertical: 4,
   },
   startButton: {
-    backgroundColor: '#ffe066',
+    backgroundColor: '#8bc34a',
     paddingHorizontal: 60,
     paddingVertical: 18,
     borderRadius: 25,
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
     borderWidth: 3,
-    borderColor: '#d4a800',
+    borderColor: '#c8e6c9',
   },
   startButtonText: {
-    color: '#5a3d00',
-    fontSize: 22,
+    color: '#1a4d2e',
+    fontSize: 20,
     fontWeight: 'bold',
-    letterSpacing: 2,
+    letterSpacing: 1,
   },
   gameContent: {
     flex: 1,
-    alignItems: 'center',
+    padding: 15,
   },
   monkeyBox: {
     alignItems: 'center',
@@ -448,6 +431,8 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#8bc34a',
     marginBottom: 10,
+    backgroundColor: 'rgba(45, 95, 63, 0.85)',
+    alignSelf: 'center',
   },
   monkeyImage: {
     width: 70,
@@ -457,22 +442,21 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 15,
     marginBottom: 15,
-    width: '100%',
-    backgroundColor: '#5a8f2a',
     borderWidth: 2,
     borderColor: '#8bc34a',
+    backgroundColor: 'rgba(90, 143, 42, 0.9)',
   },
   successBox: {
-    backgroundColor: '#4caf50',
+    backgroundColor: 'rgba(76, 175, 80, 0.9)',
     borderColor: '#2e7d32',
   },
   errorBox: {
-    backgroundColor: '#f44336',
+    backgroundColor: 'rgba(244, 67, 54, 0.9)',
     borderColor: '#c62828',
   },
   messageText: {
-    color: '#fff',
-    fontSize: 18,
+    color: '#ffffff',
+    fontSize: 16,
     fontWeight: 'bold',
     textAlign: 'center',
   },
@@ -481,11 +465,12 @@ const styles = StyleSheet.create({
     minHeight: 120,
     borderRadius: 20,
     borderWidth: 3,
-    borderColor: '#d4a800',
+    borderColor: '#8bc34a',
     marginBottom: 20,
     padding: 15,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: 'rgba(255, 249, 230, 0.95)',
   },
   bananasContainer: {
     flexDirection: 'row',
@@ -501,19 +486,16 @@ const styles = StyleSheet.create({
   optionsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'center',
-    gap: 15,
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    paddingHorizontal: 10,
   },
   optionButton: {
-    width: (width - 100) / 2,
-    aspectRatio: 1.5,
+    width: '45%',
+    height: 90,
     borderRadius: 20,
     overflow: 'hidden',
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
+    marginVertical: 6,
   },
   optionGradient: {
     flex: 1,
@@ -521,11 +503,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 20,
     borderWidth: 3,
-    borderColor: '#d4a800',
+    borderColor: '#8bc34a',
+    backgroundColor: 'rgba(255, 249, 230, 0.95)',
   },
   optionNumber: {
-    fontSize: 50,
+    fontSize: 45,
     fontWeight: 'bold',
-    color: '#5a3d00',
+    color: '#1a4d2e',
   },
 });
