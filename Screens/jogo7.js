@@ -1,5 +1,5 @@
-// Jogo7.js - Macaco da Memória (Erro de texto corrigido)
-import React, { useState, useEffect } from 'react';
+// Jogo7.js - Conte as Bananas
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -8,292 +8,294 @@ import {
   SafeAreaView,
   Dimensions,
   Alert,
-  ImageBackground
+  Image,
+  StatusBar,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 
-const { width, height } = Dimensions.get('window');
-const GAME_AREA_HEIGHT = height * 0.70;
-
-const FRUITS = [
-  { emoji: '🍌', name: 'BANANA', color: '#FFD93D' },
-  { emoji: '🥥', name: 'COCO', color: '#8B4513' },
-  { emoji: '🍇', name: 'UVA', color: '#9B59B6' },
-  { emoji: '🍉', name: 'MELANCIA', color: '#E74C3C' },
-  { emoji: '🍊', name: 'LARANJA', color: '#FF8C00' },
-  { emoji: '🍓', name: 'MORANGO', color: '#FF6B6B' },
-];
+const { width } = Dimensions.get('window');
 
 export default function Jogo7({ navigation }) {
+  const [bananaCount, setBananaCount] = useState(0);
+  const [options, setOptions] = useState([]);
   const [score, setScore] = useState(0);
-  const [level, setLevel] = useState(1);
+  const [round, setRound] = useState(1);
   const [gameActive, setGameActive] = useState(false);
-  const [gameOver, setGameOver] = useState(false);
-  const [sequence, setSequence] = useState([]);
-  const [userSequence, setUserSequence] = useState([]);
-  const [isShowingSequence, setIsShowingSequence] = useState(false);
-  const [activeButton, setActiveButton] = useState(null);
-  const [lives, setLives] = useState(5);
   const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState('');
+  const [isWaiting, setIsWaiting] = useState(false);
+  const [monkeyMood, setMonkeyMood] = useState('normal');
+
+  const shuffleArray = (array) => {
+    const newArray = [...array];
+    for (let i = newArray.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+    }
+    return newArray;
+  };
+
+  const generateRound = () => {
+    // Gera quantidade de bananas (1 a 9)
+    const count = Math.floor(Math.random() * 9) + 1;
+    setBananaCount(count);
+
+    // Gera 4 opções (1 correta + 3 erradas)
+    let wrongOptions = [];
+    while (wrongOptions.length < 3) {
+      const wrong = Math.floor(Math.random() * 9) + 1;
+      if (wrong !== count && !wrongOptions.includes(wrong)) {
+        wrongOptions.push(wrong);
+      }
+    }
+
+    const allOptions = shuffleArray([count, ...wrongOptions]);
+    setOptions(allOptions);
+    setMessage('Quantas bananas tem? 🐵');
+    setMonkeyMood('normal');
+  };
 
   const startGame = () => {
     setScore(0);
-    setLevel(1);
-    setLives(5);
+    setRound(1);
     setGameActive(true);
-    setGameOver(false);
-    setSequence([]);
-    setUserSequence([]);
-    setIsShowingSequence(false);
-    setActiveButton(null);
-    setMessage('Prepare-se! 🐵');
-    
-    setTimeout(() => {
-      startNewRound(1);
-    }, 2000);
+    setIsWaiting(false);
+    setMessageType('');
+    generateRound();
   };
 
-  const startNewRound = (roundLevel) => {
-    setUserSequence([]);
-    setActiveButton(null);
-    setMessage(`Nível ${roundLevel} - Observe!`);
-    
-    const sequenceLength = Math.min(2 + Math.floor(roundLevel / 2), 8);
-    const newSequence = [];
-    for (let i = 0; i < sequenceLength; i++) {
-      newSequence.push(Math.floor(Math.random() * 6));
-    }
-    
-    setSequence(newSequence);
-    
-    setTimeout(() => {
-      showSequence(newSequence);
-    }, 1500);
-  };
+  const handleOptionPress = (selectedNumber) => {
+    if (!gameActive || isWaiting) return;
 
-  const showSequence = (seq) => {
-    setIsShowingSequence(true);
-    setMessage('Memorize a sequência!');
-    
-    let index = 0;
-    
-    const showNextFruit = () => {
-      if (index >= seq.length) {
-        setTimeout(() => {
-          setIsShowingSequence(false);
-          setMessage('Sua vez! Repita a sequência 🐵');
-        }, 1000);
-        return;
-      }
-      
-      setActiveButton(seq[index]);
-      
+    setIsWaiting(true);
+
+    if (selectedNumber === bananaCount) {
+      // Acertou!
+      setMonkeyMood('acerto');
+      setMessage(`🎉 Isso! Tem ${bananaCount} banana${bananaCount > 1 ? 's' : ''}!`);
+      setMessageType('success');
+      setScore(prev => prev + 10);
+
       setTimeout(() => {
-        setActiveButton(null);
-        index++;
-        
-        if (index < seq.length) {
-          setTimeout(showNextFruit, 500);
-        } else {
-          setTimeout(() => {
-            setIsShowingSequence(false);
-            setMessage('Sua vez! Repita a sequência 🐵');
-          }, 1000);
-        }
-      }, 1200);
-    };
-    
-    showNextFruit();
-  };
-
-  const handleFruitPress = (index) => {
-    if (isShowingSequence || !gameActive || gameOver) return;
-    
-    setActiveButton(index);
-    setTimeout(() => setActiveButton(null), 300);
-    
-    const newUserSequence = [...userSequence, index];
-    setUserSequence(newUserSequence);
-    
-    if (sequence[newUserSequence.length - 1] === index) {
-      if (newUserSequence.length === sequence.length) {
-        handleCorrect();
-      }
-    } else {
-      handleWrong();
-    }
-  };
-
-  const handleCorrect = () => {
-    setMessage('CORRETO! 🎉');
-    const pointsEarned = level * 15;
-    setScore(prev => prev + pointsEarned);
-    
-    setTimeout(() => {
-      const newLevel = level + 1;
-      setLevel(newLevel);
-      
-      if (newLevel > 8) {
-        winGame();
-      } else {
-        startNewRound(newLevel);
-      }
-    }, 2000);
-  };
-
-  const handleWrong = () => {
-    setMessage('Tente novamente! 😊');
-    
-    setLives(prev => {
-      const newLives = prev - 1;
-      
-      if (newLives <= 0) {
-        setTimeout(() => {
-          setGameActive(false);
-          setGameOver(true);
+        if (round >= 10) {
           endGame();
-        }, 1500);
-        return 0;
-      } else {
-        setTimeout(() => {
-          startNewRound(level);
-        }, 2000);
-        return newLives;
-      }
-    });
-  };
+        } else {
+          setRound(prev => prev + 1);
+          setMessageType('');
+          setIsWaiting(false);
+          generateRound();
+        }
+      }, 1500);
+    } else {
+      // Errou
+      setMonkeyMood('erro');
+      setMessage(`❌ Opa! Tem ${bananaCount}, não ${selectedNumber}!`);
+      setMessageType('error');
 
-  const winGame = () => {
-    setGameActive(false);
-    setGameOver(true);
-    
-    setTimeout(() => {
-      Alert.alert(
-        '🏆 VOCÊ VENCEU!',
-        `Parabéns! Você é um gênio! 🐵\nPontuação Final: ${score}`,
-        [
-          { text: 'Jogar Novamente', onPress: startGame },
-          { text: 'Voltar', onPress: () => navigation.goBack() }
-        ]
-      );
-    }, 1000);
+      setTimeout(() => {
+        setMessageType('');
+        setMonkeyMood('normal');
+        setMessage('Tente de novo! 🐵');
+        setIsWaiting(false);
+      }, 1500);
+    }
   };
 
   const endGame = () => {
     setGameActive(false);
-    setGameOver(true);
-    
+    setMonkeyMood('normal');
+
     setTimeout(() => {
+      let feedback = '';
+      if (score >= 80) feedback = '🏆 Perfeito! Você sabe contar muito bem!';
+      else if (score >= 50) feedback = '⭐ Muito bem!';
+      else feedback = '💪 Continue praticando!';
+
       Alert.alert(
-        '💔 Fim de Jogo!',
-        `Você foi muito bem! 🐵\nPontuação: ${score}\nNível: ${level}`,
+        '🐵 Parabéns!',
+        `Acertos: ${score / 10}/10 🍌\nPontos: ${score}\n\n${feedback}`,
         [
-          { text: 'Jogar Novamente', onPress: startGame },
+          { text: 'Jogar de Novo', onPress: startGame },
           { text: 'Voltar', onPress: () => navigation.goBack() }
         ]
       );
-    }, 1000);
+    }, 500);
+  };
+
+  const getMonkeyImage = () => {
+    if (monkeyMood === 'acerto') {
+      return require('../assets/macacoAcerto.png');
+    } else if (monkeyMood === 'erro') {
+      return require('../assets/macacoErro.png');
+    } else {
+      return require('../assets/monk3.png');
+    }
+  };
+
+  // Renderiza as bananas na tela
+  const renderBananas = () => {
+    const bananas = [];
+    for (let i = 0; i < bananaCount; i++) {
+      bananas.push(
+        <Image
+          key={i}
+          source={require('../assets/banana.png.png')}
+          style={styles.bananaImage}
+          resizeMode="contain"
+        />
+      );
+    }
+    return bananas;
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.backButton}>← Voltar</Text>
-        </TouchableOpacity>
-        <Text style={styles.title}>🐵 Macaco da Memória</Text>
-        <View style={styles.placeholder} />
-      </View>
+    <View style={styles.container}>
+      <StatusBar backgroundColor="#2d004d" barStyle="light-content" />
+      
+      {/* Header */}
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.header}>
+          <TouchableOpacity 
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Text style={styles.backButtonText}>←</Text>
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>🍌 Conte as Bananas</Text>
+          <View style={styles.headerSpacer} />
+        </View>
+      </SafeAreaView>
 
-      <View style={styles.infoPanel}>
-        <View style={styles.infoItem}>
-          <Text style={styles.infoLabel}>PONTOS</Text>
-          <Text style={styles.infoValue}>{score}</Text>
-        </View>
-        <View style={styles.infoItem}>
-          <Text style={styles.infoLabel}>NÍVEL</Text>
-          <Text style={styles.infoValue}>{level}/8</Text>
-        </View>
-        <View style={styles.infoItem}>
-          <Text style={styles.infoLabel}>VIDAS</Text>
-          {/* CORREÇÃO: Texto simples sem repetição */}
-          <Text style={[styles.infoValue, lives <= 2 && styles.lowLives]}>
-            {lives} ❤️
-          </Text>
-        </View>
-      </View>
+      {/* Pontuação */}
+      {gameActive && (
+        <LinearGradient
+          colors={['#4a7c23', '#2d5016']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.scorePanel}
+        >
+          <View style={styles.scoreItem}>
+            <Text style={styles.scoreLabel}>ACERTOS</Text>
+            <Text style={styles.scoreValue}>🍌 {score / 10}</Text>
+          </View>
+          <View style={styles.scoreItem}>
+            <Text style={styles.scoreLabel}>RODADA</Text>
+            <Text style={styles.scoreValue}>{round}/10</Text>
+          </View>
+          <View style={styles.scoreItem}>
+            <Text style={styles.scoreLabel}>PONTOS</Text>
+            <Text style={styles.scoreValue}>{score}</Text>
+          </View>
+        </LinearGradient>
+      )}
 
-      <ImageBackground
-        source={require('../assets/bgmonk.png')}
-        style={styles.gameArea}
-        resizeMode="cover"
-      >
-        <View style={styles.gameOverlay}>
-          {!gameActive && !gameOver && (
-            <View style={styles.startScreen}>
-              <Text style={styles.startTitle}>🐵 Macaco da Memória 🧠</Text>
-              <Text style={styles.startDescription}>
-                Memorize as frutas e repita a sequência!
-              </Text>
-              <TouchableOpacity style={styles.startButton} onPress={startGame}>
-                <Text style={styles.startButtonText}>COMEÇAR</Text>
-              </TouchableOpacity>
+      {/* Área do Jogo */}
+      <View style={styles.gameArea}>
+        {/* Tela Inicial */}
+        {!gameActive && (
+          <LinearGradient
+            colors={['#5a8f2a', '#3d6b1a']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.startScreen}
+          >
+            <Image
+              source={require('../assets/monk3.png')}
+              style={styles.bigMonkey}
+              resizeMode="contain"
+            />
+            <Text style={styles.startTitle}>Conte as Bananas!</Text>
+            <Text style={styles.startDescription}>
+              Conte quantas bananas aparecem{'\n'}
+              e toque no número certo! 🍌
+            </Text>
+            
+            <View style={styles.legendBox}>
+              <Text style={styles.legendTitle}>Como jogar:</Text>
+              <Text style={styles.legendItem}>👀 Olhe as bananas</Text>
+              <Text style={styles.legendItem}>🔢 Conte quantas tem</Text>
+              <Text style={styles.legendItem}>👆 Toque no número certo!</Text>
             </View>
-          )}
 
-          {gameActive && !gameOver && (
-            <View style={styles.gameContent}>
-              <View style={styles.messageContainer}>
+            <TouchableOpacity style={styles.startButton} onPress={startGame}>
+              <Text style={styles.startButtonText}>COMEÇAR</Text>
+            </TouchableOpacity>
+          </LinearGradient>
+        )}
+
+        {/* Jogo Ativo */}
+        {gameActive && (
+          <View style={styles.gameContent}>
+            {/* Macaco */}
+            <LinearGradient
+              colors={['#5a8f2a', '#3d6b1a']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.monkeyBox}
+            >
+              <Image
+                source={getMonkeyImage()}
+                style={styles.monkeyImage}
+              />
+            </LinearGradient>
+
+            {/* Mensagem */}
+            {message !== '' && (
+              <View style={[
+                styles.messageBox,
+                messageType === 'success' && styles.successBox,
+                messageType === 'error' && styles.errorBox,
+              ]}>
                 <Text style={styles.messageText}>{message}</Text>
               </View>
+            )}
 
-              <View style={styles.monkey}>
-                <Text style={styles.monkeyEmoji}>
-                  {isShowingSequence ? '🙈' : '🐵'}
-                </Text>
+            {/* Área das Bananas */}
+            <LinearGradient
+              colors={['#fff9e6', '#ffe066']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.bananasArea}
+            >
+              <View style={styles.bananasContainer}>
+                {renderBananas()}
               </View>
+            </LinearGradient>
 
-              <View style={styles.sequenceInfo}>
-                <Text style={styles.sequenceText}>
-                  Sequência: {sequence.length} frutas
-                </Text>
-                {userSequence.length > 0 && !isShowingSequence && (
-                  <Text style={styles.progressText}>
-                    {userSequence.length}/{sequence.length}
-                  </Text>
-                )}
-              </View>
-
-              <View style={styles.fruitsGrid}>
-                {FRUITS.map((fruit, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    style={[
-                      styles.fruitButton,
-                      activeButton === index && styles.fruitButtonActive,
-                      { backgroundColor: fruit.color + '40' },
-                      activeButton === index && { backgroundColor: fruit.color },
-                    ]}
-                    onPress={() => handleFruitPress(index)}
-                    disabled={isShowingSequence}
-                    activeOpacity={0.7}
+            {/* Opções de Números */}
+            <View style={styles.optionsGrid}>
+              {options.map((num, index) => (
+                <TouchableOpacity
+                  key={index}
+                  style={styles.optionButton}
+                  onPress={() => handleOptionPress(num)}
+                  activeOpacity={0.7}
+                >
+                  <LinearGradient
+                    colors={['#fff9e6', '#ffe066']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.optionGradient}
                   >
-                    <Text style={styles.fruitEmoji}>{fruit.emoji}</Text>
-                    <Text style={styles.fruitName}>{fruit.name}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
+                    <Text style={styles.optionNumber}>{num}</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+              ))}
             </View>
-          )}
-        </View>
-      </ImageBackground>
-    </SafeAreaView>
+          </View>
+        )}
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1a4d2e',
+    backgroundColor: '#1a3d0c',
+  },
+  safeArea: {
+    backgroundColor: '#2d004d',
   },
   header: {
     flexDirection: 'row',
@@ -301,168 +303,229 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 15,
-    backgroundColor: '#2d5f3f',
+    backgroundColor: '#2d004d',
+    borderBottomWidth: 2,
+    borderBottomColor: '#8b5cf6',
+    marginTop: 20,
   },
   backButton: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '600',
+    padding: 2,
+    borderRadius: 20,
+    backgroundColor: 'rgba(139, 92, 246, 0.3)',
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  title: {
+  backButtonText: {
+    color: '#ffffff',
+    fontSize: 26,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  headerTitle: {
+    color: '#ffffff',
+    fontSize: 22,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    flex: 1,
+  },
+  headerSpacer: {
+    width: 40,
+  },
+  scorePanel: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    padding: 15,
+    marginHorizontal: 20,
+    marginTop: 15,
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: '#8bc34a',
+  },
+  scoreItem: {
+    alignItems: 'center',
+  },
+  scoreLabel: {
+    color: '#E0E0E0',
+    fontSize: 12,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  scoreValue: {
     color: '#ffffff',
     fontSize: 20,
     fontWeight: 'bold',
-  },
-  placeholder: {
-    width: 60,
-  },
-  infoPanel: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    padding: 12,
-    backgroundColor: 'rgba(45, 95, 63, 0.9)',
-    margin: 15,
-    borderRadius: 15,
-    borderWidth: 2,
-    borderColor: 'rgba(139, 195, 74, 0.5)',
-  },
-  infoItem: {
-    alignItems: 'center',
-  },
-  infoLabel: {
-    color: '#c8e6c9',
-    fontSize: 10,
-    fontWeight: 'bold',
-    marginBottom: 3,
-  },
-  infoValue: {
-    color: '#8bc34a',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  lowLives: {
-    color: '#ff6b6b',
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
   },
   gameArea: {
-    height: GAME_AREA_HEIGHT,
-    marginHorizontal: 15,
-    marginBottom: 10,
-    borderRadius: 20,
-    borderWidth: 3,
-    borderColor: '#8bc34a',
-    overflow: 'hidden',
-  },
-  gameOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.15)',
+    margin: 20,
   },
   startScreen: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 20,
-    backgroundColor: 'rgba(45, 95, 63, 0.85)',
-    margin: 10,
-    borderRadius: 15,
+    borderRadius: 20,
+    padding: 30,
+    borderWidth: 2,
+    borderColor: '#8bc34a',
+  },
+  bigMonkey: {
+    width: 140,
+    height: 140,
+    marginBottom: 15,
   },
   startTitle: {
-    color: '#ffffff',
-    fontSize: 26,
+    color: '#fff',
+    fontSize: 28,
     fontWeight: 'bold',
-    marginBottom: 15,
     textAlign: 'center',
+    marginBottom: 10,
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 2, height: 2 },
+    textShadowRadius: 3,
   },
   startDescription: {
-    color: '#c8e6c9',
-    fontSize: 16,
+    color: '#E0E0E0',
+    fontSize: 18,
     textAlign: 'center',
+    marginBottom: 25,
+    lineHeight: 28,
+  },
+  legendBox: {
+    backgroundColor: 'rgba(0, 0, 0, 0.25)',
+    padding: 20,
+    borderRadius: 15,
     marginBottom: 30,
+    width: '100%',
+    borderWidth: 2,
+    borderColor: '#ffe066',
+  },
+  legendTitle: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  legendItem: {
+    color: '#E0E0E0',
+    fontSize: 18,
+    textAlign: 'center',
+    marginVertical: 5,
   },
   startButton: {
-    backgroundColor: '#8bc34a',
-    paddingHorizontal: 50,
+    backgroundColor: '#ffe066',
+    paddingHorizontal: 60,
     paddingVertical: 18,
-    borderRadius: 15,
+    borderRadius: 25,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
     borderWidth: 3,
-    borderColor: '#c8e6c9',
+    borderColor: '#d4a800',
   },
   startButtonText: {
-    color: '#1a4d2e',
-    fontSize: 20,
+    color: '#5a3d00',
+    fontSize: 22,
     fontWeight: 'bold',
     letterSpacing: 2,
   },
   gameContent: {
     flex: 1,
-    padding: 15,
-  },
-  messageContainer: {
-    backgroundColor: 'rgba(45, 95, 63, 0.9)',
-    padding: 12,
-    borderRadius: 12,
     alignItems: 'center',
-    marginBottom: 10,
+  },
+  monkeyBox: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 10,
+    borderRadius: 50,
     borderWidth: 2,
-    borderColor: 'rgba(139, 195, 74, 0.5)',
+    borderColor: '#8bc34a',
+    marginBottom: 10,
+  },
+  monkeyImage: {
+    width: 70,
+    height: 70,
+  },
+  messageBox: {
+    padding: 12,
+    borderRadius: 15,
+    marginBottom: 15,
+    width: '100%',
+    backgroundColor: '#5a8f2a',
+    borderWidth: 2,
+    borderColor: '#8bc34a',
+  },
+  successBox: {
+    backgroundColor: '#4caf50',
+    borderColor: '#2e7d32',
+  },
+  errorBox: {
+    backgroundColor: '#f44336',
+    borderColor: '#c62828',
   },
   messageText: {
-    color: '#ffffff',
+    color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
     textAlign: 'center',
   },
-  monkey: {
+  bananasArea: {
+    width: '100%',
+    minHeight: 120,
+    borderRadius: 20,
+    borderWidth: 3,
+    borderColor: '#d4a800',
+    marginBottom: 20,
+    padding: 15,
+    justifyContent: 'center',
     alignItems: 'center',
-    marginVertical: 5,
   },
-  monkeyEmoji: {
-    fontSize: 50,
-  },
-  sequenceInfo: {
-    backgroundColor: 'rgba(139, 195, 74, 0.3)',
-    padding: 8,
-    borderRadius: 10,
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  sequenceText: {
-    color: '#ffffff',
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-  progressText: {
-    color: '#8bc34a',
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginTop: 5,
-  },
-  fruitsGrid: {
+  bananasContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'space-around',
+    justifyContent: 'center',
+    alignItems: 'center',
     gap: 10,
   },
-  fruitButton: {
-    width: (width - 80) / 3,
-    height: 80,
-    borderRadius: 15,
+  bananaImage: {
+    width: 50,
+    height: 50,
+  },
+  optionsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 15,
+  },
+  optionButton: {
+    width: (width - 100) / 2,
+    aspectRatio: 1.5,
+    borderRadius: 20,
+    overflow: 'hidden',
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+  },
+  optionGradient: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    borderRadius: 20,
     borderWidth: 3,
-    borderColor: 'rgba(255, 255, 255, 0.5)',
+    borderColor: '#d4a800',
   },
-  fruitButtonActive: {
-    transform: [{ scale: 1.1 }],
-    borderColor: '#ffffff',
-  },
-  fruitEmoji: {
-    fontSize: 32,
-    marginBottom: 3,
-  },
-  fruitName: {
-    color: '#ffffff',
-    fontSize: 10,
+  optionNumber: {
+    fontSize: 50,
     fontWeight: 'bold',
+    color: '#5a3d00',
   },
 });

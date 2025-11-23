@@ -1,492 +1,299 @@
-// Jogo6.js - Macaco Saltador (Plataformas)
-import React, { useState, useEffect, useRef } from 'react';
+// Jogo6.js - O Que o Macaco Come?
+import React, { useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   SafeAreaView,
-  Animated,
   Dimensions,
   Alert,
-  ImageBackground
+  Image,
+  StatusBar,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 
-const { width, height } = Dimensions.get('window');
-const PLAYER_SIZE = 60;
-const PLATFORM_WIDTH = 100;
-const PLATFORM_HEIGHT = 20;
-const GAME_AREA_HEIGHT = height * 0.55;
-const GRAVITY = 0.8;
-const JUMP_FORCE = -15;
+const { width } = Dimensions.get('window');
+
+// Frutas que o macaco come
+const FOODS = [
+  { emoji: '🍌', name: 'Banana', isFood: true },
+  { emoji: '🍎', name: 'Maçã', isFood: true },
+  { emoji: '🥭', name: 'Manga', isFood: true },
+  { emoji: '🍊', name: 'Laranja', isFood: true },
+  { emoji: '🍇', name: 'Uva', isFood: true },
+  { emoji: '🍓', name: 'Morango', isFood: true },
+  { emoji: '🍉', name: 'Melancia', isFood: true },
+  { emoji: '🍑', name: 'Pêssego', isFood: true },
+];
+
+// Objetos que NÃO são comida
+const NOT_FOODS = [
+  { emoji: '🪨', name: 'Pedra', isFood: false },
+  { emoji: '🍂', name: 'Folha', isFood: false },
+  { emoji: '🪵', name: 'Graveto', isFood: false },
+  { emoji: '🧱', name: 'Tijolo', isFood: false },
+  { emoji: '🪃', name: 'Bumerangue', isFood: false },
+  { emoji: '🧸', name: 'Ursinho', isFood: false },
+  { emoji: '⚽', name: 'Bola', isFood: false },
+  { emoji: '🎈', name: 'Balão', isFood: false },
+  { emoji: '🧩', name: 'Quebra-cabeça', isFood: false },
+  { emoji: '🔑', name: 'Chave', isFood: false },
+];
 
 export default function Jogo6({ navigation }) {
   const [score, setScore] = useState(0);
-  const [lives, setLives] = useState(3);
+  const [round, setRound] = useState(1);
   const [gameActive, setGameActive] = useState(false);
-  const [gameOver, setGameOver] = useState(false);
-  const [level, setLevel] = useState(1);
-  const [platforms, setPlatforms] = useState([]);
-  const [playerX, setPlayerX] = useState(width / 2 - PLAYER_SIZE / 2);
-  const [playerY, setPlayerY] = useState(GAME_AREA_HEIGHT - 150);
-  const [velocityY, setVelocityY] = useState(0);
-  const [isJumping, setIsJumping] = useState(false);
-  const [bananas, setBananas] = useState([]);
-  const [collectedIds, setCollectedIds] = useState(new Set());
-  const [platformsPassed, setPlatformsPassed] = useState(0);
-  
-  const gameLoop = useRef(null);
-  const platformTimer = useRef(null);
-  const playerYRef = useRef(GAME_AREA_HEIGHT - 150);
-  const velocityYRef = useRef(0);
-  const playerXRef = useRef(width / 2 - PLAYER_SIZE / 2);
-  const platformsRef = useRef([]);
-  const bananasRef = useRef([]);
+  const [objects, setObjects] = useState([]);
+  const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState('');
+  const [monkeyMood, setMonkeyMood] = useState('normal');
+  const [isWaiting, setIsWaiting] = useState(false);
 
-  useEffect(() => {
-    playerYRef.current = playerY;
-  }, [playerY]);
+  const shuffleArray = (array) => {
+    const newArray = [...array];
+    for (let i = newArray.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+    }
+    return newArray;
+  };
 
-  useEffect(() => {
-    velocityYRef.current = velocityY;
-  }, [velocityY]);
+  const generateObjects = () => {
+    const shuffledFoods = shuffleArray(FOODS);
+    const selectedFood = { ...shuffledFoods[0], id: 1 };
+    
+    const shuffledNotFoods = shuffleArray(NOT_FOODS);
+    const selectedNotFoods = shuffledNotFoods.slice(0, 3).map((obj, index) => ({
+      ...obj,
+      id: index + 2,
+    }));
 
-  useEffect(() => {
-    playerXRef.current = playerX;
-  }, [playerX]);
-
-  useEffect(() => {
-    platformsRef.current = platforms;
-  }, [platforms]);
-
-  useEffect(() => {
-    bananasRef.current = bananas;
-  }, [bananas]);
+    const allObjects = shuffleArray([selectedFood, ...selectedNotFoods]);
+    const finalObjects = shuffleArray(allObjects).map((obj, index) => ({
+      ...obj,
+      id: index + 1,
+    }));
+    
+    setObjects(finalObjects);
+  };
 
   const startGame = () => {
     setScore(0);
-    setLives(3);
-    setLevel(1);
+    setRound(1);
     setGameActive(true);
-    setGameOver(false);
-    setPlatforms([]);
-    setBananas([]);
-    setCollectedIds(new Set());
-    setPlatformsPassed(0);
-    setPlayerX(width / 2 - PLAYER_SIZE / 2);
-    setPlayerY(GAME_AREA_HEIGHT - 150);
-    setVelocityY(0);
-    setIsJumping(false);
-    
-    playerXRef.current = width / 2 - PLAYER_SIZE / 2;
-    playerYRef.current = GAME_AREA_HEIGHT - 150;
-    velocityYRef.current = 0;
-    platformsRef.current = [];
-    bananasRef.current = [];
-
-    // Criar plataforma inicial
-    const initialPlatform = {
-      id: Date.now(),
-      x: width / 2 - PLATFORM_WIDTH / 2,
-      y: GAME_AREA_HEIGHT - 100,
-      hasBanana: false,
-    };
-    setPlatforms([initialPlatform]);
-    platformsRef.current = [initialPlatform];
+    setMessage('');
+    setMonkeyMood('normal');
+    setIsWaiting(false);
+    generateObjects();
   };
 
-  // Game loop - física do jogo
-  useEffect(() => {
-    if (gameActive && !gameOver) {
-      gameLoop.current = setInterval(() => {
-        // Aplicar gravidade
-        let newVelocityY = velocityYRef.current + GRAVITY;
-        let newPlayerY = playerYRef.current + newVelocityY;
+  const handleObjectTap = (obj) => {
+    if (!gameActive || isWaiting) return;
 
-        // Verificar colisão com plataformas
-        let onPlatform = false;
-        platformsRef.current.forEach(platform => {
-          const playerBottom = newPlayerY + PLAYER_SIZE;
-          const playerCenterX = playerXRef.current + PLAYER_SIZE / 2;
-          
-          // Verifica se está caindo (velocidade positiva)
-          if (newVelocityY > 0) {
-            // Verifica colisão Y
-            if (playerBottom >= platform.y && 
-                playerBottom <= platform.y + PLATFORM_HEIGHT + 10) {
-              // Verifica colisão X
-              if (playerCenterX >= platform.x && 
-                  playerCenterX <= platform.x + PLATFORM_WIDTH) {
-                onPlatform = true;
-                newPlayerY = platform.y - PLAYER_SIZE;
-                newVelocityY = 0;
-                setIsJumping(false);
-              }
-            }
-          }
-        });
+    setIsWaiting(true);
 
-        // Coletar bananas
-        bananasRef.current.forEach(banana => {
-          if (!banana.collected && !collectedIds.has(banana.id)) {
-            const distX = Math.abs(
-              (playerXRef.current + PLAYER_SIZE / 2) - (banana.x + 20)
-            );
-            const distY = Math.abs(
-              (newPlayerY + PLAYER_SIZE / 2) - (banana.y + 20)
-            );
-            
-            if (distX < 40 && distY < 40) {
-              collectBanana(banana.id);
-            }
-          }
-        });
+    if (obj.isFood) {
+      setMonkeyMood('acerto');
+      setMessage(`🎉 Muito bem! ${obj.name} é gostosa!`);
+      setMessageType('success');
+      setScore(prev => prev + 10);
 
-        // Verificar se caiu
-        if (newPlayerY > GAME_AREA_HEIGHT) {
-          loseLife();
-          return;
+      setTimeout(() => {
+        if (round >= 10) {
+          endGame();
+        } else {
+          setRound(prev => prev + 1);
+          setMessage('');
+          setMonkeyMood('normal');
+          setIsWaiting(false);
+          generateObjects();
         }
+      }, 1500);
+    } else {
+      setMonkeyMood('erro');
+      setMessage(`❌ Opa! ${obj.name} não é comida!`);
+      setMessageType('error');
 
-        setPlayerY(newPlayerY);
-        setVelocityY(newVelocityY);
-        playerYRef.current = newPlayerY;
-        velocityYRef.current = newVelocityY;
-
-        // Mover plataformas para baixo (scroll)
-        if (newPlayerY < GAME_AREA_HEIGHT * 0.4) {
-          const scrollAmount = (GAME_AREA_HEIGHT * 0.4) - newPlayerY;
-          
-          setPlatforms(prev => {
-            const updated = prev.map(p => ({
-              ...p,
-              y: p.y + scrollAmount
-            })).filter(p => p.y < GAME_AREA_HEIGHT + 50);
-            
-            platformsRef.current = updated;
-            return updated;
-          });
-
-          setBananas(prev => {
-            const updated = prev.map(b => ({
-              ...b,
-              y: b.y + scrollAmount
-            })).filter(b => b.y < GAME_AREA_HEIGHT + 50);
-            
-            bananasRef.current = updated;
-            return updated;
-          });
-
-          setPlayerY(GAME_AREA_HEIGHT * 0.4);
-          playerYRef.current = GAME_AREA_HEIGHT * 0.4;
-
-          setPlatformsPassed(prev => {
-            const newPassed = prev + 1;
-            if (newPassed % 5 === 0) {
-              setScore(s => s + 50);
-            }
-            return newPassed;
-          });
-        }
-      }, 1000 / 60); // 60 FPS
+      setTimeout(() => {
+        setMessage('');
+        setMonkeyMood('normal');
+        setIsWaiting(false);
+      }, 1500);
     }
-
-    return () => {
-      if (gameLoop.current) clearInterval(gameLoop.current);
-    };
-  }, [gameActive, gameOver]);
-
-  // Gerar plataformas
-  useEffect(() => {
-    if (gameActive && !gameOver) {
-      platformTimer.current = setInterval(() => {
-        generatePlatform();
-      }, 1200 - (level * 50));
-    }
-
-    return () => {
-      if (platformTimer.current) clearInterval(platformTimer.current);
-    };
-  }, [gameActive, gameOver, level]);
-
-  const generatePlatform = () => {
-    const platforms = platformsRef.current;
-    
-    if (platforms.length < 6) {
-      const lastPlatform = platforms[platforms.length - 1];
-      const minY = lastPlatform ? lastPlatform.y - 120 : -100;
-      
-      const hasBanana = Math.random() > 0.5;
-      
-      const newPlatform = {
-        id: Date.now() + Math.random(),
-        x: Math.random() * (width - PLATFORM_WIDTH - 40) + 20,
-        y: minY,
-        hasBanana: hasBanana,
-      };
-
-      setPlatforms(prev => [...prev, newPlatform]);
-      platformsRef.current = [...platformsRef.current, newPlatform];
-
-      // Adicionar banana se tiver
-      if (hasBanana) {
-        const newBanana = {
-          id: 'banana_' + newPlatform.id,
-          x: newPlatform.x + PLATFORM_WIDTH / 2 - 20,
-          y: newPlatform.y - 40,
-          collected: false,
-        };
-        setBananas(prev => [...prev, newBanana]);
-        bananasRef.current = [...bananasRef.current, newBanana];
-      }
-    }
-  };
-
-  const collectBanana = (bananaId) => {
-    setCollectedIds(prev => new Set([...prev, bananaId]));
-    
-    setBananas(prev => prev.map(b => 
-      b.id === bananaId ? { ...b, collected: true } : b
-    ));
-
-    setScore(prev => {
-      const newScore = prev + 20;
-      if (newScore >= level * 150 && level < 10) {
-        setLevel(l => l + 1);
-      }
-      return newScore;
-    });
-  };
-
-  const jump = () => {
-    if (!gameActive || gameOver || isJumping) return;
-    
-    setVelocityY(JUMP_FORCE);
-    velocityYRef.current = JUMP_FORCE;
-    setIsJumping(true);
-  };
-
-  const moveLeft = () => {
-    if (!gameActive || gameOver) return;
-    setPlayerX(prev => {
-      const newX = Math.max(10, prev - 50);
-      playerXRef.current = newX;
-      return newX;
-    });
-  };
-
-  const moveRight = () => {
-    if (!gameActive || gameOver) return;
-    setPlayerX(prev => {
-      const newX = Math.min(width - PLAYER_SIZE - 10, prev + 50);
-      playerXRef.current = newX;
-      return newX;
-    });
-  };
-
-  const loseLife = () => {
-    setLives(prev => {
-      const newLives = prev - 1;
-      if (newLives <= 0) {
-        endGame();
-      } else {
-        // Resetar posição
-        setPlayerY(GAME_AREA_HEIGHT - 150);
-        setPlayerX(width / 2 - PLAYER_SIZE / 2);
-        setVelocityY(0);
-        playerYRef.current = GAME_AREA_HEIGHT - 150;
-        playerXRef.current = width / 2 - PLAYER_SIZE / 2;
-        velocityYRef.current = 0;
-      }
-      return newLives;
-    });
   };
 
   const endGame = () => {
     setGameActive(false);
-    setGameOver(true);
-    if (gameLoop.current) clearInterval(gameLoop.current);
-    if (platformTimer.current) clearInterval(platformTimer.current);
+    setMonkeyMood('normal');
 
     setTimeout(() => {
+      let feedback = '';
+      if (score >= 80) feedback = '🏆 Perfeito! Você é demais!';
+      else if (score >= 50) feedback = '⭐ Muito bem!';
+      else feedback = '💪 Continue tentando!';
+
       Alert.alert(
-        '🐵 Fim de Jogo!',
-        `Plataformas: ${platformsPassed}\nBananas: ${Math.floor(score / 20)}🍌\nPontuação: ${score}\nNível: ${level}\n\n${score >= 300 ? '🏆 Macaco Saltador!' : score >= 150 ? '⭐ Muito ágil!' : '💪 Continue treinando!'}`,
+        '🐵 Parabéns!',
+        `Frutas coletadas: ${score / 10} 🍎\nPontos: ${score}\n\n${feedback}`,
         [
-          { text: 'Jogar Novamente', onPress: startGame },
+          { text: 'Jogar de Novo', onPress: startGame },
           { text: 'Voltar', onPress: () => navigation.goBack() }
         ]
       );
-    }, 300);
+    }, 500);
   };
 
-  useEffect(() => {
-    return () => {
-      if (gameLoop.current) clearInterval(gameLoop.current);
-      if (platformTimer.current) clearInterval(platformTimer.current);
-    };
-  }, []);
+  const getMonkeyImage = () => {
+    if (monkeyMood === 'acerto') {
+      return require('../assets/macacoAcerto.png');
+    } else if (monkeyMood === 'erro') {
+      return require('../assets/macacoErro.png');
+    } else {
+      return require('../assets/monk3.png');
+    }
+  };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.backButton}>← Voltar</Text>
-        </TouchableOpacity>
-        <Text style={styles.title}>🐵 Macaco Saltador</Text>
-        <View style={styles.placeholder} />
-      </View>
-
-      <View style={styles.infoPanel}>
-        <View style={styles.infoItem}>
-          <Text style={styles.infoLabel}>BANANAS</Text>
-          <Text style={styles.infoValue}>{Math.floor(score / 20)}🍌</Text>
+    <View style={styles.container}>
+      <StatusBar backgroundColor="#2d004d" barStyle="light-content" />
+      
+      {/* Header */}
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.header}>
+          <TouchableOpacity 
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Text style={styles.backButtonText}>←</Text>
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>🐵 O Que Como?</Text>
+          <View style={styles.headerSpacer} />
         </View>
-        <View style={styles.infoItem}>
-          <Text style={styles.infoLabel}>PONTOS</Text>
-          <Text style={styles.infoValue}>{score}</Text>
-        </View>
-        <View style={styles.infoItem}>
-          <Text style={styles.infoLabel}>VIDAS</Text>
-          <Text style={[styles.infoValue, lives <= 1 && styles.lowLives]}>
-            {'❤️'.repeat(lives)}
-          </Text>
-        </View>
-        <View style={styles.infoItem}>
-          <Text style={styles.infoLabel}>NÍVEL</Text>
-          <Text style={styles.infoValue}>{level}</Text>
-        </View>
-      </View>
+      </SafeAreaView>
 
-      <ImageBackground
-        source={require('../assets/bgmonk.png')}
-        style={styles.gameArea}
-        resizeMode="cover"
-      >
-        <View style={styles.gameOverlay}>
-          {!gameActive && !gameOver && (
-            <View style={styles.startScreen}>
-              <Text style={styles.startTitle}>🐵 Macaco Saltador 🌴</Text>
-              <Text style={styles.startDescription}>
-                Pule de plataforma em plataforma{'\n'}
-                e colete todas as bananas!
-              </Text>
-              <View style={styles.legendContainer}>
-                <Text style={styles.legendTitle}>Como jogar:</Text>
-                <Text style={styles.legendItem}>🦘 Toque para PULAR</Text>
-                <Text style={styles.legendItem}>↔️ Mova para os lados</Text>
-                <Text style={styles.legendItem}>🍌 Colete bananas (+20pts)</Text>
-                <Text style={styles.legendItem}>⚠️ Não caia! (-1❤️)</Text>
-              </View>
-              <TouchableOpacity style={styles.startButton} onPress={startGame}>
-                <Text style={styles.startButtonText}>COMEÇAR</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-
-          {gameActive && !gameOver && (
-            <View style={styles.gameContent}>
-              {/* Plataformas */}
-              {platforms.map(platform => (
-                <View
-                  key={platform.id}
-                  style={[
-                    styles.platform,
-                    {
-                      left: platform.x,
-                      top: platform.y,
-                    },
-                  ]}
-                >
-                  <View style={styles.platformTop} />
-                  <View style={styles.platformBody} />
-                </View>
-              ))}
-
-              {/* Bananas */}
-              {bananas.map(banana => (
-                !banana.collected && (
-                  <View
-                    key={banana.id}
-                    style={[
-                      styles.banana,
-                      {
-                        left: banana.x,
-                        top: banana.y,
-                      },
-                    ]}
-                  >
-                    <Text style={styles.bananaEmoji}>🍌</Text>
-                  </View>
-                )
-              ))}
-
-              {/* Jogador */}
-              <View
-                style={[
-                  styles.player,
-                  {
-                    left: playerX,
-                    top: playerY,
-                  },
-                ]}
-              >
-                <Text style={styles.playerEmoji}>🐵</Text>
-              </View>
-            </View>
-          )}
-        </View>
-      </ImageBackground>
-
-      {gameActive && !gameOver && (
-        <View style={styles.controls}>
-          <View style={styles.controlRow}>
-            <TouchableOpacity
-              style={[styles.controlButton, styles.moveButton]}
-              onPress={moveLeft}
-              activeOpacity={0.6}
-            >
-              <Text style={styles.controlText}>⬅️</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity
-              style={[styles.controlButton, styles.jumpButton]}
-              onPress={jump}
-              activeOpacity={0.6}
-            >
-              <Text style={styles.jumpText}>🦘</Text>
-              <Text style={styles.controlLabel}>PULAR</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity
-              style={[styles.controlButton, styles.moveButton]}
-              onPress={moveRight}
-              activeOpacity={0.6}
-            >
-              <Text style={styles.controlText}>➡️</Text>
-            </TouchableOpacity>
+      {/* Pontuação */}
+      {gameActive && (
+        <LinearGradient
+          colors={['#4a7c23', '#2d5016']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.scorePanel}
+        >
+          <View style={styles.scoreItem}>
+            <Text style={styles.scoreLabel}>FRUTAS</Text>
+            <Text style={styles.scoreValue}>🍎 {score / 10}</Text>
           </View>
-        </View>
+          <View style={styles.scoreItem}>
+            <Text style={styles.scoreLabel}>RODADA</Text>
+            <Text style={styles.scoreValue}>{round}/10</Text>
+          </View>
+          <View style={styles.scoreItem}>
+            <Text style={styles.scoreLabel}>PONTOS</Text>
+            <Text style={styles.scoreValue}>{score}</Text>
+          </View>
+        </LinearGradient>
       )}
 
-      {!gameActive && !gameOver && (
-        <View style={styles.instructions}>
-          <Text style={styles.instructionsTitle}>Dicas:</Text>
-          <Text style={styles.instructionsText}>
-            • Calcule bem seus pulos{'\n'}
-            • Mire no centro das plataformas{'\n'}
-            • Quanto mais alto, mais pontos!
-          </Text>
-        </View>
-      )}
-    </SafeAreaView>
+      {/* Área do Jogo */}
+      <View style={styles.gameArea}>
+        {/* Tela Inicial */}
+        {!gameActive && (
+          <LinearGradient
+            colors={['#5a8f2a', '#3d6b1a']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.startScreen}
+          >
+            <Image
+              source={require('../assets/monk3.png')}
+              style={styles.bigMonkey}
+              resizeMode="contain"
+            />
+            <Text style={styles.startTitle}>O Que o Macaco Come?</Text>
+            <Text style={styles.startDescription}>
+              Toque na comida do macaco!{'\n'}
+              Ele adora frutas! 🍌🍎🥭
+            </Text>
+            
+            <View style={styles.legendBox}>
+              <Text style={styles.legendTitle}>Lembre-se:</Text>
+              <Text style={styles.legendItem}>✅ Frutas = Comida!</Text>
+              <Text style={styles.legendItem}>🍌🍎🥭🍊🍇🍓🍉🍑</Text>
+              <Text style={styles.legendItem}>❌ Outros = Não é comida!</Text>
+            </View>
+
+            <TouchableOpacity style={styles.startButton} onPress={startGame}>
+              <Text style={styles.startButtonText}>COMEÇAR</Text>
+            </TouchableOpacity>
+          </LinearGradient>
+        )}
+
+        {/* Jogo Ativo */}
+        {gameActive && (
+          <View style={styles.gameContent}>
+            {/* Macaco */}
+            <LinearGradient
+              colors={['#5a8f2a', '#3d6b1a']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.monkeyBox}
+            >
+              <Image
+                source={getMonkeyImage()}
+                style={styles.monkeyImage}
+              />
+              <Text style={styles.monkeyQuestion}>
+                O que eu como? Toque na minha comida!
+              </Text>
+            </LinearGradient>
+
+            {/* Mensagem de Feedback */}
+            {message !== '' && (
+              <View style={[
+                styles.messageBox,
+                messageType === 'success' ? styles.successBox : styles.errorBox
+              ]}>
+                <Text style={styles.messageText}>{message}</Text>
+              </View>
+            )}
+
+            {/* Objetos para escolher */}
+            <View style={styles.objectsGrid}>
+              {objects.map((obj) => (
+                <TouchableOpacity
+                  key={obj.id}
+                  style={styles.objectButton}
+                  onPress={() => handleObjectTap(obj)}
+                  activeOpacity={0.7}
+                >
+                  <LinearGradient
+                    colors={['#fff9e6', '#ffe066']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.objectGradient}
+                  >
+                    <Text style={styles.objectEmoji}>{obj.emoji}</Text>
+                    <Text style={styles.objectName}>{obj.name}</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        )}
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1a4d2e',
+    backgroundColor: '#1a3d0c',
+  },
+  safeArea: {
+    backgroundColor: '#2d004d',
   },
   header: {
     flexDirection: 'row',
@@ -494,224 +301,226 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 15,
-    backgroundColor: '#2d5f3f',
+    backgroundColor: '#2d004d',
+    borderBottomWidth: 2,
+    borderBottomColor: '#8b5cf6',
+    marginTop: 20,
   },
   backButton: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  title: {
-    color: '#ffffff',
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  placeholder: {
-    width: 60,
-  },
-  infoPanel: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    padding: 12,
-    backgroundColor: 'rgba(45, 95, 63, 0.9)',
-    margin: 15,
-    borderRadius: 15,
-    borderWidth: 2,
-    borderColor: 'rgba(139, 195, 74, 0.5)',
-  },
-  infoItem: {
-    alignItems: 'center',
-  },
-  infoLabel: {
-    color: '#c8e6c9',
-    fontSize: 10,
-    fontWeight: 'bold',
-    marginBottom: 3,
-  },
-  infoValue: {
-    color: '#8bc34a',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  lowLives: {
-    color: '#ff6b6b',
-  },
-  gameArea: {
-    height: GAME_AREA_HEIGHT,
-    marginHorizontal: 15,
-    marginBottom: 10,
+    padding: 2,
     borderRadius: 20,
-    borderWidth: 3,
-    borderColor: '#8bc34a',
-    overflow: 'hidden',
-  },
-  gameOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.15)',
-  },
-  startScreen: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 20,
-    backgroundColor: 'rgba(45, 95, 63, 0.85)',
-    margin: 10,
-    borderRadius: 15,
-  },
-  startTitle: {
-    color: '#ffffff',
-    fontSize: 26,
-    fontWeight: 'bold',
-    marginBottom: 15,
-    textAlign: 'center',
-    textShadowColor: 'rgba(0, 0, 0, 0.5)',
-    textShadowOffset: { width: 2, height: 2 },
-    textShadowRadius: 3,
-  },
-  startDescription: {
-    color: '#c8e6c9',
-    fontSize: 16,
-    textAlign: 'center',
-    marginBottom: 20,
-    lineHeight: 24,
-  },
-  legendContainer: {
-    backgroundColor: 'rgba(139, 195, 74, 0.3)',
-    padding: 15,
-    borderRadius: 12,
-    marginBottom: 25,
-    borderWidth: 2,
-    borderColor: 'rgba(139, 195, 74, 0.5)',
-  },
-  legendTitle: {
-    color: '#ffffff',
-    fontSize: 14,
-    fontWeight: 'bold',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  legendItem: {
-    color: '#c8e6c9',
-    fontSize: 13,
-    marginVertical: 3,
-    textAlign: 'center',
-  },
-  startButton: {
-    backgroundColor: '#8bc34a',
-    paddingHorizontal: 50,
-    paddingVertical: 18,
-    borderRadius: 15,
-    borderWidth: 3,
-    borderColor: '#c8e6c9',
-  },
-  startButtonText: {
-    color: '#1a4d2e',
-    fontSize: 20,
-    fontWeight: 'bold',
-    letterSpacing: 2,
-  },
-  gameContent: {
-    flex: 1,
-    position: 'relative',
-  },
-  platform: {
-    position: 'absolute',
-    width: PLATFORM_WIDTH,
-    height: PLATFORM_HEIGHT,
-  },
-  platformTop: {
-    height: 5,
-    backgroundColor: '#8bc34a',
-    borderTopLeftRadius: 5,
-    borderTopRightRadius: 5,
-  },
-  platformBody: {
-    flex: 1,
-    backgroundColor: '#5d8a3a',
-    borderBottomLeftRadius: 5,
-    borderBottomRightRadius: 5,
-  },
-  banana: {
-    position: 'absolute',
+    backgroundColor: 'rgba(139, 92, 246, 0.3)',
     width: 40,
     height: 40,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  bananaEmoji: {
-    fontSize: 35,
+  backButtonText: {
+    color: '#ffffff',
+    fontSize: 26,
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
-  player: {
-    position: 'absolute',
-    width: PLAYER_SIZE,
-    height: PLAYER_SIZE,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(139, 195, 74, 0.3)',
-    borderRadius: 30,
-    borderWidth: 3,
-    borderColor: '#c8e6c9',
-  },
-  playerEmoji: {
-    fontSize: 45,
-  },
-  controls: {
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-  },
-  controlRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    gap: 10,
-  },
-  controlButton: {
-    height: 85,
-    borderRadius: 15,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 3,
-    backgroundColor: '#8bc34a',
-    borderColor: '#c8e6c9',
-  },
-  moveButton: {
+  headerTitle: {
+    color: '#ffffff',
+    fontSize: 22,
+    fontWeight: 'bold',
+    textAlign: 'center',
     flex: 1,
   },
-  jumpButton: {
-    flex: 1.5,
+  headerSpacer: {
+    width: 40,
   },
-  controlText: {
-    fontSize: 36,
+  scorePanel: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    padding: 15,
+    marginHorizontal: 20,
+    marginTop: 15,
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: '#8bc34a',
   },
-  jumpText: {
-    fontSize: 40,
-    marginBottom: 2,
+  scoreItem: {
+    alignItems: 'center',
   },
-  controlLabel: {
-    color: '#1a4d2e',
+  scoreLabel: {
+    color: '#E0E0E0',
     fontSize: 12,
     fontWeight: 'bold',
-    letterSpacing: 1,
+    marginBottom: 4,
   },
-  instructions: {
-    padding: 15,
-    backgroundColor: 'rgba(45, 95, 63, 0.8)',
-    marginHorizontal: 15,
-    marginBottom: 10,
-    borderRadius: 12,
-    borderLeftWidth: 4,
-    borderLeftColor: '#8bc34a',
-  },
-  instructionsTitle: {
+  scoreValue: {
     color: '#ffffff',
-    fontSize: 15,
+    fontSize: 20,
     fontWeight: 'bold',
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
+  },
+  gameArea: {
+    flex: 1,
+    margin: 20,
+  },
+  startScreen: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 20,
+    padding: 30,
+    borderWidth: 2,
+    borderColor: '#8bc34a',
+  },
+  bigMonkey: {
+    width: 140,
+    height: 140,
+    marginBottom: 15,
+  },
+  startTitle: {
+    color: '#fff',
+    fontSize: 28,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 10,
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 2, height: 2 },
+    textShadowRadius: 3,
+  },
+  startDescription: {
+    color: '#E0E0E0',
+    fontSize: 18,
+    textAlign: 'center',
+    marginBottom: 25,
+    lineHeight: 28,
+  },
+  legendBox: {
+    backgroundColor: 'rgba(0, 0, 0, 0.25)',
+    padding: 20,
+    borderRadius: 15,
+    marginBottom: 30,
+    width: '100%',
+    borderWidth: 2,
+    borderColor: '#ffe066',
+  },
+  legendTitle: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  legendItem: {
+    color: '#E0E0E0',
+    fontSize: 18,
+    textAlign: 'center',
+    marginVertical: 5,
+  },
+  startButton: {
+    backgroundColor: '#ffe066',
+    paddingHorizontal: 60,
+    paddingVertical: 18,
+    borderRadius: 25,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    borderWidth: 3,
+    borderColor: '#d4a800',
+  },
+  startButtonText: {
+    color: '#5a3d00',
+    fontSize: 22,
+    fontWeight: 'bold',
+    letterSpacing: 2,
+  },
+  gameContent: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  monkeyBox: {
+    alignItems: 'center',
+    paddingVertical: 15,
+    paddingHorizontal: 25,
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: '#8bc34a',
+    marginBottom: 15,
+    width: '100%',
+    height: 160,
+    justifyContent: 'center',
+  },
+  monkeyImage: {
+    width: 90,
+    height: 90,
+  },
+  monkeyQuestion: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginTop: 8,
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
+  },
+  messageBox: {
+    padding: 12,
+    borderRadius: 15,
+    marginBottom: 15,
+    width: '100%',
+    borderWidth: 2,
+  },
+  successBox: {
+    backgroundColor: '#4caf50',
+    borderColor: '#2e7d32',
+  },
+  errorBox: {
+    backgroundColor: '#f44336',
+    borderColor: '#c62828',
+  },
+  messageText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
+  },
+  objectsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 12,
+    paddingHorizontal: 5,
+  },
+  objectButton: {
+    width: (width - 80) / 2,
+    aspectRatio: 1,
+    borderRadius: 20,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    overflow: 'hidden',
+  },
+  objectGradient: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 20,
+    borderWidth: 3,
+    borderColor: '#d4a800',
+  },
+  objectEmoji: {
+    fontSize: 55,
     marginBottom: 8,
   },
-  instructionsText: {
-    color: '#c8e6c9',
-    fontSize: 13,
-    lineHeight: 20,
+  objectName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#5a3d00',
   },
 });

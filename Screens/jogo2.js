@@ -18,7 +18,7 @@ const { width, height } = Dimensions.get('window');
 const PLAYER_SIZE = 90;
 const ITEM_SIZE = 50;
 const GAME_AREA_HEIGHT = height * 0.55;
-const PLAYER_SPEED = 10; // DIMINUÍ A VELOCIDADE (era 15, agora 10)
+const PLAYER_SPEED = 10;
 
 export default function Jogo2({ navigation }) {
   const [score, setScore] = useState(0);
@@ -29,8 +29,8 @@ export default function Jogo2({ navigation }) {
   const [items, setItems] = useState([]);
   const [timeLeft, setTimeLeft] = useState(40);
   const [collectedItems, setCollectedItems] = useState(new Set());
+  const [facingDirection, setFacingDirection] = useState('right');
   
-  // SISTEMA DE MOVIMENTAÇÃO ULTRA FLUIDA
   const playerX = useRef(new Animated.Value(width / 2 - PLAYER_SIZE / 2)).current;
   
   const spawnTimer = useRef(null);
@@ -38,19 +38,16 @@ export default function Jogo2({ navigation }) {
   const itemsRef = useRef([]);
   const playerXRef = useRef(width / 2 - PLAYER_SIZE / 2);
   
-  // Estados para controle de movimento
   const [isMovingLeft, setIsMovingLeft] = useState(false);
   const [isMovingRight, setIsMovingRight] = useState(false);
   const movementAnimation = useRef(null);
   const lastUpdateTime = useRef(Date.now());
 
-  // CONFIGURAÇÃO DAS IMAGENS
   const ARROW_IMAGES = {
     left: require('../assets/sim.png'),
     right: require('../assets/nao.png'),
   };
 
-  // IMAGENS PARA O JOGO
   const GAME_IMAGES = {
     player: require('../assets/macaco.png'),
     banana: require('../assets/banana.png.png'),
@@ -59,7 +56,6 @@ export default function Jogo2({ navigation }) {
     obstacle3: require('../assets/scorpion.png'),
   };
 
-  // Manter referências atualizadas
   useEffect(() => {
     itemsRef.current = items;
   }, [items]);
@@ -68,7 +64,6 @@ export default function Jogo2({ navigation }) {
     playerXRef.current = playerX._value;
   }, [playerX._value]);
 
-  // SISTEMA DE MOVIMENTAÇÃO ULTRA FLUIDA - Game Loop
   useEffect(() => {
     if (!gameActive || gameOver) return;
 
@@ -82,7 +77,6 @@ export default function Jogo2({ navigation }) {
         const currentX = playerX._value;
         let newX = currentX;
         
-        // Cálculo baseado no tempo para movimento suave - VELOCIDADE REDUZIDA
         const movement = (PLAYER_SPEED * deltaTime) / 16;
         
         if (isMovingLeft) {
@@ -91,7 +85,6 @@ export default function Jogo2({ navigation }) {
           newX = Math.min(width - PLAYER_SIZE - 10, currentX + movement);
         }
         
-        // Atualização DIRETA do valor - MUITO MAIS RÁPIDO
         if (newX !== currentX) {
           playerX.setValue(newX);
         }
@@ -100,7 +93,6 @@ export default function Jogo2({ navigation }) {
       animationFrameId = requestAnimationFrame(gameLoop);
     };
 
-    // Iniciar o game loop
     animationFrameId = requestAnimationFrame(gameLoop);
     lastUpdateTime.current = Date.now();
 
@@ -111,7 +103,6 @@ export default function Jogo2({ navigation }) {
     };
   }, [isMovingLeft, isMovingRight, gameActive, gameOver]);
 
-  // Timer do jogo
   useEffect(() => {
     if (gameActive && timeLeft > 0 && !gameOver) {
       gameTimer.current = setTimeout(() => {
@@ -126,7 +117,6 @@ export default function Jogo2({ navigation }) {
     };
   }, [gameActive, timeLeft, gameOver]);
 
-  // Iniciar o jogo
   const startGame = () => {
     setScore(0);
     setLives(3);
@@ -136,8 +126,8 @@ export default function Jogo2({ navigation }) {
     setGameOver(false);
     setItems([]);
     setCollectedItems(new Set());
+    setFacingDirection('right');
     
-    // Resetar posição com animação suave
     const startX = width / 2 - PLAYER_SIZE / 2;
     Animated.spring(playerX, {
       toValue: startX,
@@ -152,7 +142,6 @@ export default function Jogo2({ navigation }) {
     setIsMovingRight(false);
   };
 
-  // Spawnar itens caindo
   useEffect(() => {
     if (gameActive && !gameOver) {
       const spawnInterval = Math.max(900 - (level * 50), 600);
@@ -167,7 +156,6 @@ export default function Jogo2({ navigation }) {
     };
   }, [gameActive, gameOver, level]);
 
-  // Criar novo item caindo
   const spawnItem = () => {
     const isGood = Math.random() > 0.30;
     const itemTypes = isGood 
@@ -190,7 +178,6 @@ export default function Jogo2({ navigation }) {
 
     setItems(prev => [...prev, newItem]);
 
-    // Animação de queda
     Animated.timing(newItem.y, {
       toValue: GAME_AREA_HEIGHT + ITEM_SIZE,
       duration: 3800 - (level * 150),
@@ -199,7 +186,6 @@ export default function Jogo2({ navigation }) {
       removeItem(itemId);
     });
 
-    // Sistema de detecção de colisão
     let collisionChecked = false;
     const collisionInterval = setInterval(() => {
       const currentY = newItem.y._value;
@@ -230,7 +216,6 @@ export default function Jogo2({ navigation }) {
     }, 30);
   };
 
-  // Lidar com colisão
   const handleCollision = (itemId, item) => {
     if (collectedItems.has(itemId)) return;
     
@@ -261,35 +246,34 @@ export default function Jogo2({ navigation }) {
     }
   };
 
-  // Remover item
   const removeItem = (id) => {
     setItems(prev => prev.filter(item => item.id !== id));
   };
 
-  // MOVIMENTAÇÃO ULTRA FLUIDA
   const startMoveLeft = () => {
     if (!gameActive || gameOver) return;
     setIsMovingRight(false);
     setIsMovingLeft(true);
+    setFacingDirection('left');
   };
 
   const startMoveRight = () => {
     if (!gameActive || gameOver) return;
     setIsMovingLeft(false);
     setIsMovingRight(true);
+    setFacingDirection('right');
   };
 
-  // Parar movimento
   const stopMove = () => {
     setIsMovingLeft(false);
     setIsMovingRight(false);
   };
 
-  // Movimento rápido com spring animation - VELOCIDADE REDUZIDA
   const quickMoveLeft = () => {
     if (!gameActive || gameOver) return;
+    setFacingDirection('left');
     const currentX = playerX._value;
-    const newX = Math.max(10, currentX - 40); // ERA 60, AGORA 40
+    const newX = Math.max(10, currentX - 40);
     
     Animated.spring(playerX, {
       toValue: newX,
@@ -301,8 +285,9 @@ export default function Jogo2({ navigation }) {
 
   const quickMoveRight = () => {
     if (!gameActive || gameOver) return;
+    setFacingDirection('right');
     const currentX = playerX._value;
-    const newX = Math.min(width - PLAYER_SIZE - 10, currentX + 40); // ERA 60, AGORA 40
+    const newX = Math.min(width - PLAYER_SIZE - 10, currentX + 40);
     
     Animated.spring(playerX, {
       toValue: newX,
@@ -312,7 +297,6 @@ export default function Jogo2({ navigation }) {
     }).start();
   };
 
-  // Fim do jogo
   const endGame = (reason) => {
     setGameActive(false);
     setGameOver(true);
@@ -338,7 +322,6 @@ export default function Jogo2({ navigation }) {
     }, 300);
   };
 
-  // Limpar ao sair
   useEffect(() => {
     return () => {
       if (spawnTimer.current) clearInterval(spawnTimer.current);
@@ -350,7 +333,6 @@ export default function Jogo2({ navigation }) {
     <SafeAreaView style={styles.container}>
       <StatusBar backgroundColor="#2d004d" barStyle="light-content" />
       
-      {/* HEADER */}
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.header}>
           <TouchableOpacity 
@@ -364,7 +346,6 @@ export default function Jogo2({ navigation }) {
         </View>
       </SafeAreaView>
 
-      {/* Painel de Informações */}
       <View style={styles.infoPanel}>
         <View style={styles.infoItem}>
           <Text style={styles.infoLabel}>TEMPO</Text>
@@ -388,7 +369,6 @@ export default function Jogo2({ navigation }) {
         </View>
       </View>
 
-      {/* Área do Jogo */}
       <ImageBackground
         source={require('../assets/bgmonk.png')}
         style={styles.gameArea}
@@ -409,7 +389,6 @@ export default function Jogo2({ navigation }) {
 
           {gameActive && !gameOver && (
             <>
-              {/* Itens caindo */}
               {items.map(item => (
                 !item.collected && (
                   <Animated.View
@@ -431,13 +410,13 @@ export default function Jogo2({ navigation }) {
                 )
               ))}
 
-              {/* Jogador - MOVIMENTAÇÃO ULTRA FLUIDA */}
               <Animated.View
                 style={[
                   styles.player,
                   {
                     left: playerX,
                     bottom: 15,
+                    transform: [{ scaleX: facingDirection === 'left' ? 1 : -1 }],
                   },
                 ]}
               >
@@ -452,7 +431,6 @@ export default function Jogo2({ navigation }) {
         </View>
       </ImageBackground>
 
-      {/* Controles - RESPONSIVOS E FLUIDOS */}
       {gameActive && !gameOver && (
         <View style={styles.controls}>
           <TouchableOpacity
