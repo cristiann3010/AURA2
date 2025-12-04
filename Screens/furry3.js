@@ -93,7 +93,7 @@ export default function Furry3({ route, navigation }) {
           >
             <Text style={styles.backButtonText}>←</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Carta Corujini</Text>
+          <Text style={styles.headerTitle}>NOCTI</Text>
           <View style={styles.headerSpacer} />
         </View>
       </SafeAreaView>
@@ -167,11 +167,7 @@ export default function Furry3({ route, navigation }) {
             </Animated.View>
           </View>
 
-          {scannedFromQR && (
-            <View style={styles.scanInfo}>
-              <Text style={styles.scanText}>Carta Escaneada!</Text>
-            </View>
-          )}
+          
         </Animated.View>
 
         {/* === MODAL INFORMAÇÕES ARRUMADO === */}
@@ -185,7 +181,7 @@ export default function Furry3({ route, navigation }) {
             <View style={styles.modalContent}>
               
               <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>🦉 CORUJA</Text>
+                <Text style={styles.modalTitle}> CORUJA</Text>
                 <TouchableOpacity 
                   style={styles.closeButton}
                   onPress={() => setShowSobre(false)}
@@ -201,7 +197,7 @@ export default function Furry3({ route, navigation }) {
                 <View style={styles.modalBody}>
                   
                   <View style={styles.infoCard}>
-                    <Text style={styles.cardTitle}>🌟 Características</Text>
+                    <Text style={styles.cardTitle}> Características</Text>
                     <Text style={styles.cardText}>
                       • Aves noturnas e silenciosas{'\n'}
                       • Excelente visão na escuridão{'\n'}
@@ -211,7 +207,7 @@ export default function Furry3({ route, navigation }) {
                   </View>
 
                   <View style={styles.infoCard}>
-                    <Text style={styles.cardTitle}>🏠 Onde Vivem</Text>
+                    <Text style={styles.cardTitle}> Onde Vivem</Text>
                     <Text style={styles.cardText}>
                       • Florestas e bosques{'\n'}
                       • Áreas com muitas árvores{'\n'}
@@ -221,7 +217,7 @@ export default function Furry3({ route, navigation }) {
                   </View>
 
                   <View style={styles.infoCard}>
-                    <Text style={styles.cardTitle}>🍖 Alimentação</Text>
+                    <Text style={styles.cardTitle}> Alimentação</Text>
                     <Text style={styles.cardText}>
                       • Caçam à noite{'\n'}
                       • Comem ratos e pequenos animais{'\n'}
@@ -231,9 +227,9 @@ export default function Furry3({ route, navigation }) {
                   </View>
 
                   <View style={styles.funFact}>
-                    <Text style={styles.funFactTitle}>💡 Curiosidade!</Text>
+                    <Text style={styles.funFactTitle}> Curiosidade!</Text>
                     <Text style={styles.funFactText}>
-                      As corujas têm penas especiais que tornam seu voo totalmente silencioso! Assim elas conseguem caçar sem fazer barulho! 🦉✨
+                      As corujas têm penas especiais que tornam seu voo totalmente silencioso! Assim elas conseguem caçar sem fazer barulho! 
                     </Text>
                   </View>
 

@@ -1,338 +1,37 @@
-// Jogo2.js - Macaquinho Coletor de Bananas
-import React, { useState, useEffect, useRef } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
+import React from 'react';
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
   SafeAreaView,
-  Animated,
   Dimensions,
-  Alert,
-  ImageBackground,
-  StatusBar,
-  Image
+  Image,
+  TouchableOpacity,
+  StatusBar
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient'; // 💜 adiciona o gradiente igual ao game1.js
 
 const { width, height } = Dimensions.get('window');
-const PLAYER_SIZE = 90;
-const ITEM_SIZE = 50;
-const GAME_AREA_HEIGHT = height * 0.55;
-const PLAYER_SPEED = 10;
 
-export default function Jogo2({ navigation }) {
-  const [score, setScore] = useState(0);
-  const [lives, setLives] = useState(3);
-  const [gameActive, setGameActive] = useState(false);
-  const [gameOver, setGameOver] = useState(false);
-  const [level, setLevel] = useState(1);
-  const [items, setItems] = useState([]);
-  const [timeLeft, setTimeLeft] = useState(40);
-  const [collectedItems, setCollectedItems] = useState(new Set());
-  const [facingDirection, setFacingDirection] = useState('right');
+export default function MemoryGame({ navigation }) {
   
-  const playerX = useRef(new Animated.Value(width / 2 - PLAYER_SIZE / 2)).current;
-  
-  const spawnTimer = useRef(null);
-  const gameTimer = useRef(null);
-  const itemsRef = useRef([]);
-  const playerXRef = useRef(width / 2 - PLAYER_SIZE / 2);
-  
-  const [isMovingLeft, setIsMovingLeft] = useState(false);
-  const [isMovingRight, setIsMovingRight] = useState(false);
-  const movementAnimation = useRef(null);
-  const lastUpdateTime = useRef(Date.now());
-
-  const ARROW_IMAGES = {
-    left: require('../assets/sim.png'),
-    right: require('../assets/nao.png'),
+  const handlePressGame1 = () => {
+    navigation.navigate('Jogo2');
   };
 
-  const GAME_IMAGES = {
-    player: require('../assets/macaco.png'),
-    banana: require('../assets/banana.png.png'),
-    obstacle1: require('../assets/banana5.png'),
-    obstacle2: require('../assets/spider.png'),
-    obstacle3: require('../assets/scorpion.png'),
+  const handlePressGame2 = () => {
+    navigation.navigate('Jogo6');
   };
 
-  useEffect(() => {
-    itemsRef.current = items;
-  }, [items]);
-
-  useEffect(() => {
-    playerXRef.current = playerX._value;
-  }, [playerX._value]);
-
-  useEffect(() => {
-    if (!gameActive || gameOver) return;
-
-    let animationFrameId;
-    const gameLoop = () => {
-      const now = Date.now();
-      const deltaTime = now - lastUpdateTime.current;
-      lastUpdateTime.current = now;
-
-      if (isMovingLeft || isMovingRight) {
-        const currentX = playerX._value;
-        let newX = currentX;
-        
-        const movement = (PLAYER_SPEED * deltaTime) / 16;
-        
-        if (isMovingLeft) {
-          newX = Math.max(10, currentX - movement);
-        } else if (isMovingRight) {
-          newX = Math.min(width - PLAYER_SIZE - 10, currentX + movement);
-        }
-        
-        if (newX !== currentX) {
-          playerX.setValue(newX);
-        }
-      }
-      
-      animationFrameId = requestAnimationFrame(gameLoop);
-    };
-
-    animationFrameId = requestAnimationFrame(gameLoop);
-    lastUpdateTime.current = Date.now();
-
-    return () => {
-      if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId);
-      }
-    };
-  }, [isMovingLeft, isMovingRight, gameActive, gameOver]);
-
-  useEffect(() => {
-    if (gameActive && timeLeft > 0 && !gameOver) {
-      gameTimer.current = setTimeout(() => {
-        setTimeLeft(timeLeft - 1);
-      }, 1000);
-    } else if (timeLeft === 0 && gameActive) {
-      endGame('time');
-    }
-
-    return () => {
-      if (gameTimer.current) clearTimeout(gameTimer.current);
-    };
-  }, [gameActive, timeLeft, gameOver]);
-
-  const startGame = () => {
-    setScore(0);
-    setLives(3);
-    setLevel(1);
-    setTimeLeft(40);
-    setGameActive(true);
-    setGameOver(false);
-    setItems([]);
-    setCollectedItems(new Set());
-    setFacingDirection('right');
-    
-    const startX = width / 2 - PLAYER_SIZE / 2;
-    Animated.spring(playerX, {
-      toValue: startX,
-      tension: 50,
-      friction: 7,
-      useNativeDriver: false,
-    }).start();
-    
-    playerXRef.current = startX;
-    itemsRef.current = [];
-    setIsMovingLeft(false);
-    setIsMovingRight(false);
+  const handlePressGame3 = () => {
+    navigation.navigate('Jogo7');
   };
-
-  useEffect(() => {
-    if (gameActive && !gameOver) {
-      const spawnInterval = Math.max(900 - (level * 50), 600);
-      
-      spawnTimer.current = setInterval(() => {
-        spawnItem();
-      }, spawnInterval);
-    }
-
-    return () => {
-      if (spawnTimer.current) clearInterval(spawnTimer.current);
-    };
-  }, [gameActive, gameOver, level]);
-
-  const spawnItem = () => {
-    const isGood = Math.random() > 0.30;
-    const itemTypes = isGood 
-      ? ['banana', 'banana', 'banana', 'banana', 'banana']
-      : ['obstacle1', 'obstacle2', 'obstacle3'];
-    
-    const itemId = Date.now() + Math.random();
-    const itemType = itemTypes[Math.floor(Math.random() * itemTypes.length)];
-    
-    const newItem = {
-      id: itemId,
-      x: Math.random() * (width - ITEM_SIZE - 40) + 20,
-      y: new Animated.Value(-ITEM_SIZE),
-      type: itemType,
-      image: GAME_IMAGES[itemType],
-      isGood: isGood,
-      points: isGood ? (Math.floor(Math.random() * 3) + 1) * 10 : 0,
-      collected: false,
-    };
-
-    setItems(prev => [...prev, newItem]);
-
-    Animated.timing(newItem.y, {
-      toValue: GAME_AREA_HEIGHT + ITEM_SIZE,
-      duration: 3800 - (level * 150),
-      useNativeDriver: false,
-    }).start(() => {
-      removeItem(itemId);
-    });
-
-    let collisionChecked = false;
-    const collisionInterval = setInterval(() => {
-      const currentY = newItem.y._value;
-      
-      const playerTop = GAME_AREA_HEIGHT - 15 - PLAYER_SIZE;
-      const playerBottom = GAME_AREA_HEIGHT - 15;
-      const itemBottom = currentY + ITEM_SIZE;
-      
-      if (itemBottom >= playerTop && currentY <= playerBottom && !collisionChecked) {
-        const item = itemsRef.current.find(i => i.id === itemId);
-        if (!item || item.collected) {
-          clearInterval(collisionInterval);
-          return;
-        }
-
-        const itemCenterX = newItem.x + ITEM_SIZE / 2;
-        const playerCenterX = playerXRef.current + PLAYER_SIZE / 2;
-        const distanceX = Math.abs(itemCenterX - playerCenterX);
-        
-        if (distanceX < 50) {
-          collisionChecked = true;
-          clearInterval(collisionInterval);
-          handleCollision(itemId, newItem);
-        }
-      } else if (currentY > playerBottom) {
-        clearInterval(collisionInterval);
-      }
-    }, 30);
-  };
-
-  const handleCollision = (itemId, item) => {
-    if (collectedItems.has(itemId)) return;
-    
-    setCollectedItems(prev => new Set([...prev, itemId]));
-    
-    setItems(prev => prev.map(i => 
-      i.id === itemId ? { ...i, collected: true } : i
-    ));
-
-    removeItem(itemId);
-    
-    if (item.isGood) {
-      setScore(prev => {
-        const newScore = prev + item.points;
-        if (newScore >= level * 100 && level < 10) {
-          setLevel(l => l + 1);
-        }
-        return newScore;
-      });
-    } else {
-      setLives(prev => {
-        const newLives = prev - 1;
-        if (newLives <= 0) {
-          setTimeout(() => endGame('lives'), 100);
-        }
-        return newLives;
-      });
-    }
-  };
-
-  const removeItem = (id) => {
-    setItems(prev => prev.filter(item => item.id !== id));
-  };
-
-  const startMoveLeft = () => {
-    if (!gameActive || gameOver) return;
-    setIsMovingRight(false);
-    setIsMovingLeft(true);
-    setFacingDirection('left');
-  };
-
-  const startMoveRight = () => {
-    if (!gameActive || gameOver) return;
-    setIsMovingLeft(false);
-    setIsMovingRight(true);
-    setFacingDirection('right');
-  };
-
-  const stopMove = () => {
-    setIsMovingLeft(false);
-    setIsMovingRight(false);
-  };
-
-  const quickMoveLeft = () => {
-    if (!gameActive || gameOver) return;
-    setFacingDirection('left');
-    const currentX = playerX._value;
-    const newX = Math.max(10, currentX - 40);
-    
-    Animated.spring(playerX, {
-      toValue: newX,
-      tension: 100,
-      friction: 5,
-      useNativeDriver: false,
-    }).start();
-  };
-
-  const quickMoveRight = () => {
-    if (!gameActive || gameOver) return;
-    setFacingDirection('right');
-    const currentX = playerX._value;
-    const newX = Math.min(width - PLAYER_SIZE - 10, currentX + 40);
-    
-    Animated.spring(playerX, {
-      toValue: newX,
-      tension: 100,
-      friction: 5,
-      useNativeDriver: false,
-    }).start();
-  };
-
-  const endGame = (reason) => {
-    setGameActive(false);
-    setGameOver(true);
-    if (spawnTimer.current) clearInterval(spawnTimer.current);
-    if (gameTimer.current) clearTimeout(gameTimer.current);
-    setItems([]);
-    setIsMovingLeft(false);
-    setIsMovingRight(false);
-
-    const message = reason === 'time' 
-      ? '⏰ Tempo Esgotado!' 
-      : '💔 Você perdeu todas as vidas!';
-
-    setTimeout(() => {
-      Alert.alert(
-        message,
-        `🍌 Bananas coletadas: ${Math.floor(score / 10)}\nPontuação: ${score}\nNível: ${level}\n\n${score >= 300 ? '🏆 Macaco Campeão!' : score >= 150 ? '⭐ Muito bem!' : '💪 Tente novamente!'}`,
-        [
-          { text: 'Jogar Novamente', onPress: startGame },
-          { text: 'Voltar', onPress: () => navigation.goBack() }
-        ]
-      );
-    }, 300);
-  };
-
-  useEffect(() => {
-    return () => {
-      if (spawnTimer.current) clearInterval(spawnTimer.current);
-      if (gameTimer.current) clearTimeout(gameTimer.current);
-    };
-  }, []);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <StatusBar backgroundColor="#2d004d" barStyle="light-content" />
       
+      {/* HEADER */}
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.header}>
           <TouchableOpacity 
@@ -341,143 +40,84 @@ export default function Jogo2({ navigation }) {
           >
             <Text style={styles.backButtonText}>←</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>🐵 Macaco das Bananas</Text>
+          <Text style={styles.headerTitle}>Escolher Jogo</Text>
           <View style={styles.headerSpacer} />
         </View>
       </SafeAreaView>
 
-      <View style={styles.infoPanel}>
-        <View style={styles.infoItem}>
-          <Text style={styles.infoLabel}>TEMPO</Text>
-          <Text style={[styles.infoValue, timeLeft <= 10 && styles.timeWarning]}>
-            {timeLeft}s
-          </Text>
-        </View>
-        <View style={styles.infoItem}>
-          <Text style={styles.infoLabel}>BANANAS</Text>
-          <Text style={styles.infoValue}>{Math.floor(score / 10)}🍌</Text>
-        </View>
-        <View style={styles.infoItem}>
-          <Text style={styles.infoLabel}>VIDAS</Text>
-          <Text style={[styles.infoValue, lives <= 1 && styles.lowLives]}>
-            {'❤️'.repeat(lives)}
-          </Text>
-        </View>
-        <View style={styles.infoItem}>
-          <Text style={styles.infoLabel}>NÍVEL</Text>
-          <Text style={styles.infoValue}>{level}</Text>
+      {/* CONTEÚDO */}
+      <View style={styles.content}>
+        <View style={styles.rectanglesContainer}>
+
+          {/* === Retângulo 1 === */}
+          <TouchableOpacity onPress={handlePressGame1} activeOpacity={0.8}>
+            <LinearGradient
+              colors={['#C884FF', '#784F99']} // 💜 mesmo gradiente do game1
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={[styles.rectangle, styles.rectangle1]}
+            >
+              <Image 
+                source={require('../assets/monk1.png')}
+                style={styles.rectangleImage2}
+                resizeMode="contain"
+              />
+              <View style={styles.textContainer}>
+                <Text style={styles.gameTitle}>PEGA BANANA</Text>
+                <Text style={styles.gameSubtitle}></Text>
+              </View>
+            </LinearGradient>
+          </TouchableOpacity>
+
+          {/* === Retângulo 2 === */}
+          <TouchableOpacity onPress={handlePressGame2} activeOpacity={0.8}>
+            <LinearGradient
+              colors={['#C884FF', '#784F99']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={[styles.rectangle, styles.rectangle2]}
+            >
+              <Image 
+                source={require('../assets/monk2.png')}
+                style={styles.rectangleImage}
+                resizeMode="contain"
+              />
+              <View style={styles.textContainer}>
+                <Text style={styles.gameTitle}>ALIMENTE O MACACO</Text>
+                <Text style={styles.gameSubtitle}></Text>
+              </View>
+            </LinearGradient>
+          </TouchableOpacity>
+
+          {/* === Retângulo 3 === */}
+          <TouchableOpacity onPress={handlePressGame3} activeOpacity={0.8}>
+            <LinearGradient
+              colors={['#C884FF', '#784F99']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={[styles.rectangle, styles.rectangle3]}
+            >
+              <Image 
+                source={require('../assets/monk3.png')}
+                style={styles.rectangleImage}
+                resizeMode="contain"
+              />
+              <View style={styles.textContainer}>
+                <Text style={styles.gameTitle}>CONTAGEM DE BANANAS</Text>
+                <Text style={styles.gameSubtitle}></Text>
+              </View>
+            </LinearGradient>
+          </TouchableOpacity>
+
         </View>
       </View>
-
-      <ImageBackground
-        source={require('../assets/bgmonk.png')}
-        style={styles.gameArea}
-        resizeMode="cover"
-      >
-        <View style={styles.gameOverlay}>
-          {!gameActive && !gameOver && (
-            <View style={styles.startScreen}>
-              <Text style={styles.startTitle}>Macaco das Bananas</Text>
-              <Text style={styles.startDescription}>
-                Pegue as bananas e evite os perigos
-              </Text>
-              <TouchableOpacity style={styles.startButton} onPress={startGame}>
-                <Text style={styles.startButtonText}>COMEÇAR</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-
-          {gameActive && !gameOver && (
-            <>
-              {items.map(item => (
-                !item.collected && (
-                  <Animated.View
-                    key={item.id}
-                    style={[
-                      styles.item,
-                      {
-                        left: item.x,
-                        top: item.y,
-                      },
-                    ]}
-                  >
-                    <Image 
-                      source={item.image} 
-                      style={styles.itemImage}
-                      resizeMode="contain"
-                    />
-                  </Animated.View>
-                )
-              ))}
-
-              <Animated.View
-                style={[
-                  styles.player,
-                  {
-                    left: playerX,
-                    bottom: 15,
-                    transform: [{ scaleX: facingDirection === 'left' ? 1 : -1 }],
-                  },
-                ]}
-              >
-                <Image 
-                  source={GAME_IMAGES.player} 
-                  style={styles.playerImage}
-                  resizeMode="contain"
-                />
-              </Animated.View>
-            </>
-          )}
-        </View>
-      </ImageBackground>
-
-      {gameActive && !gameOver && (
-        <View style={styles.controls}>
-          <TouchableOpacity
-            style={[styles.controlButton, styles.leftButton]}
-            onPressIn={startMoveLeft}
-            onPressOut={stopMove}
-            onPress={quickMoveLeft}
-            activeOpacity={0.8}
-            delayPressIn={0}
-          >
-            <Image 
-              source={ARROW_IMAGES.left}
-              style={styles.arrowImage}
-              resizeMode="contain"
-            />
-            <Text style={styles.controlLabel}>ESQUERDA</Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            style={[styles.controlButton, styles.rightButton]}
-            onPressIn={startMoveRight}
-            onPressOut={stopMove}
-            onPress={quickMoveRight}
-            activeOpacity={0.8}
-            delayPressIn={0}
-          >
-            <Image 
-              source={ARROW_IMAGES.right}
-              style={styles.arrowImage}
-              resizeMode="contain"
-            />
-            <Text style={styles.controlLabel}>DIREITA</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#1a4d2e',
-  },
-  safeArea: {
-    backgroundColor: '#2d004d',
-  },
+  container: { flex: 1, backgroundColor: '#000000' },
+  safeArea: { backgroundColor: '#2d004d' },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -487,10 +127,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#2d004d',
     borderBottomWidth: 2,
     borderBottomColor: '#8b5cf6',
-    marginTop: 30,
+    marginTop: 20,
   },
   backButton: {
-    padding: 8,
+    padding: 2,
     borderRadius: 20,
     backgroundColor: 'rgba(139, 92, 246, 0.3)',
     width: 40,
@@ -503,9 +143,6 @@ const styles = StyleSheet.create({
     fontSize: 26,
     fontWeight: 'bold',
     textAlign: 'center',
-    textAlignVertical: 'center',
-    lineHeight: 21,
-    includeFontPadding: false,
   },
   headerTitle: {
     color: '#ffffff',
@@ -514,142 +151,58 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     flex: 1,
   },
-  headerSpacer: {
-    width: 40,
-  },
-  infoPanel: {
-    flexDirection: 'row',
+  headerSpacer: { width: 40 },
+  content: { flex: 1 },
+  rectanglesContainer: {
+    flex: 1,
     justifyContent: 'space-around',
     alignItems: 'center',
-    padding: 12,
-    backgroundColor: 'rgba(45, 95, 63, 0.9)',
-    margin: 15,
-    marginTop: 10,
-    borderRadius: 15,
+    paddingVertical: 20,
+  },
+  rectangle: {
+    width: 350,
+    height: 180,
+    borderRadius: 16,
     borderWidth: 2,
-    borderColor: 'rgba(139, 195, 74, 0.5)',
-  },
-  infoItem: {
-    alignItems: 'center',
-  },
-  infoLabel: {
-    color: '#c8e6c9',
-    fontSize: 10,
-    fontWeight: 'bold',
-    marginBottom: 3,
-  },
-  infoValue: {
-    color: '#8bc34a',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  timeWarning: {
-    color: '#ff6b6b',
-  },
-  lowLives: {
-    color: '#ff6b6b',
-  },
-  gameArea: {
-    height: GAME_AREA_HEIGHT,
-    marginHorizontal: 15,
-    marginBottom: 10,
-    borderRadius: 20,
-    borderWidth: 3,
-    borderColor: '#8bc34a',
-    overflow: 'hidden',
-  },
-  gameOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.15)',
-  },
-  startScreen: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 30,
-    backgroundColor: 'rgba(45, 95, 63, 0.9)',
-  },
-  startTitle: {
-    color: '#ffffff',
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    textAlign: 'center',
-  },
-  startDescription: {
-    color: '#c8e6c9',
-    fontSize: 16,
-    textAlign: 'center',
-    marginBottom: 40,
-    lineHeight: 22,
-  },
-  startButton: {
-    backgroundColor: '#8bc34a',
-    paddingHorizontal: 60,
-    paddingVertical: 18,
-    borderRadius: 25,
-    borderWidth: 3,
-    borderColor: '#c8e6c9',
-  },
-  startButtonText: {
-    color: '#1a4d2e',
-    fontSize: 20,
-    fontWeight: 'bold',
-    letterSpacing: 1,
-  },
-  item: {
-    position: 'absolute',
-    width: ITEM_SIZE,
-    height: ITEM_SIZE,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  itemImage: {
-    width: ITEM_SIZE - 5,
-    height: ITEM_SIZE - 5,
-  },
-  player: {
-    position: 'absolute',
-    width: PLAYER_SIZE,
-    height: PLAYER_SIZE,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  playerImage: {
-    width: PLAYER_SIZE,
-    height: PLAYER_SIZE,
-  },
-  controls: {
+    
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-    gap: 15,
-  },
-  controlButton: {
-    flex: 1,
-    height: 85,
-    borderRadius: 15,
     alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  rectangleImage: {
+    width: 250,
+    height: 250,
+    marginLeft: -90,
+  },
+  rectangleImage2: {
+    width: 250,
+    height: 250,
+    marginLeft: -90,
+    marginBottom: 18,
+  },
+  textContainer: {
+    flex: 1,
     justifyContent: 'center',
-    borderWidth: 3,
-    backgroundColor: '#8bc34a',
+    alignItems: 'flex-start',
+    marginLeft: -30,
   },
-  leftButton: {
-    borderColor: '#c8e6c9',
-  },
-  rightButton: {
-    borderColor: '#c8e6c9',
-  },
-  arrowImage: {
-    width: 40,
-    height: 40,
-    marginBottom: 5,
-  },
-  controlLabel: {
-    color: '#1a4d2e',
-    fontSize: 12,
+  gameTitle: {
+    fontSize: 22,
     fontWeight: 'bold',
-    letterSpacing: 1,
+    color: '#FFFFFF',
+    marginBottom: 8,
+    textAlign: 'left',
+    textShadowColor: 'rgba(0, 0, 0, 0.8)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 3,
   },
+  gameSubtitle: {
+    fontSize: 14,
+    color: '#E0E0E0',
+    textAlign: 'left',
+    fontStyle: 'italic',
+  },
+  rectangle1: {},
+  rectangle2: {},
+  rectangle3: {},
 });

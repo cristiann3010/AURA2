@@ -169,7 +169,7 @@ export default function Jogo6({ navigation }) {
           >
             <Text style={styles.backButtonText}>←</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>🐵 O Que Como?</Text>
+          <Text style={styles.headerTitle}>Alimente o macaco</Text>
           <View style={styles.headerSpacer} />
         </View>
       </SafeAreaView>
@@ -179,7 +179,7 @@ export default function Jogo6({ navigation }) {
         <View style={styles.scorePanel}>
           <View style={styles.scoreItem}>
             <Text style={styles.scoreLabel}>FRUTAS</Text>
-            <Text style={styles.scoreValue}>🍎 {score / 10}</Text>
+            <Text style={styles.scoreValue}> {score / 10}</Text>
           </View>
           <View style={styles.scoreItem}>
             <Text style={styles.scoreLabel}>RODADA</Text>
@@ -210,15 +210,10 @@ export default function Jogo6({ navigation }) {
               <Text style={styles.startTitle}>O Que o Macaco Come?</Text>
               <Text style={styles.startDescription}>
                 Toque na comida do macaco!{'\n'}
-                Ele adora frutas! 🍌🍎🥭
+                Ele adora frutas!
               </Text>
               
-              <View style={styles.legendBox}>
-                <Text style={styles.legendTitle}>Lembre-se:</Text>
-                <Text style={styles.legendItem}>✅ Frutas = Comida!</Text>
-                <Text style={styles.legendItem}>🍌🍎🥭🍊🍇🍓🍉🍑</Text>
-                <Text style={styles.legendItem}>❌ Outros = Não é comida!</Text>
-              </View>
+    
 
               <TouchableOpacity style={styles.startButton} onPress={startGame}>
                 <Text style={styles.startButtonText}>COMEÇAR</Text>
@@ -489,7 +484,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 3,
     borderColor: '#8bc34a',
-    backgroundColor: 'rgba(255, 249, 230, 0.95)',
+   backgroundColor: '#1a4d2e',
   },
   objectEmoji: {
     fontSize: 55,
@@ -498,6 +493,6 @@ const styles = StyleSheet.create({
   objectName: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#1a4d2e',
+    color: '#ffffffff',
   },
 });

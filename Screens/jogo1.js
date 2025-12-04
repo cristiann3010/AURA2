@@ -1,23 +1,13 @@
-// MemoryGame.js - Jogo da Memória com Header Fixa
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  TouchableOpacity, 
-  Dimensions, 
-  Image,
-  ImageBackground,
-  SafeAreaView,
-  Alert,
-  Animated,
-  StatusBar
+  View, Text, StyleSheet, TouchableOpacity, Dimensions, 
+  Image, ImageBackground, SafeAreaView, Alert, Animated, StatusBar 
 } from 'react-native';
 
-const { width, height } = Dimensions.get('window');
+
+const { width } = Dimensions.get('window');
 const CARD_SIZE = (width - 80) / 3;
 
-// Componente de carta individual com animação
 function AnimatedCard({ card, isFlipped, onPress, disabled }) {
   const flipAnimation = useRef(new Animated.Value(0)).current;
 
@@ -55,7 +45,6 @@ function AnimatedCard({ card, isFlipped, onPress, disabled }) {
       disabled={disabled}
       activeOpacity={0.8}
     >
-      {/* Verso da carta (IMAGEM - fácil de trocar) */}
       <Animated.View style={[styles.card, styles.cardFace, frontAnimatedStyle]}>
         <View style={styles.cardBack}>
           <Image 
@@ -66,7 +55,6 @@ function AnimatedCard({ card, isFlipped, onPress, disabled }) {
         </View>
       </Animated.View>
 
-      {/* Frente da carta (imagem) */}
       <Animated.View style={[styles.card, styles.cardFace, styles.cardFlipped, backAnimatedStyle]}>
         <Image source={card.image} style={styles.cardImage} />
       </Animated.View>
@@ -79,8 +67,9 @@ export default function MemoryGame({ navigation }) {
   const [flipped, setFlipped] = useState([]);
   const [matched, setMatched] = useState([]);
   const [moves, setMoves] = useState(0);
+  const [serverConnected, setServerConnected] = useState(false);
+  const [testando, setTestando] = useState(false);
 
-  // Imagens diferentes para cada par
   const cardImages = [
     { id: 1, image: require('../assets/owl.png') },
     { id: 2, image: require('../assets/forest.png') },
@@ -91,7 +80,6 @@ export default function MemoryGame({ navigation }) {
   ];
 
   const initializeGame = () => {
-    // Criar pares de cartas
     let gameCards = [];
     cardImages.forEach((item, index) => {
       gameCards.push(
@@ -99,8 +87,6 @@ export default function MemoryGame({ navigation }) {
         { id: index * 2 + 1, type: item.id, image: item.image, flipped: false }
       );
     });
-
-    // Embaralhar
     gameCards = gameCards.sort(() => Math.random() - 0.5);
     setCards(gameCards);
     setFlipped([]);
@@ -110,7 +96,51 @@ export default function MemoryGame({ navigation }) {
 
   useEffect(() => {
     initializeGame();
+    checkServerConnection();
+    
+    // Reconecta a cada 10 segundos
+    const interval = setInterval(checkServerConnection, 10000);
+    return () => clearInterval(interval);
   }, []);
+
+  const checkServerConnection = async () => {
+    try {
+      const connected = await apiService.checkServerHealth();
+      setServerConnected(connected);
+      
+      if (connected) {
+        console.log('✅ Servidor conectado!');
+      } else {
+        console.log('❌ Servidor desconectado');
+      }
+    } catch (error) {
+      console.error('💥 Erro de conexão:', error);
+      setServerConnected(false);
+    }
+  };
+
+  const sendCommandToESP = async (command) => {
+    console.log(`🎮 Tentando: ${command}`);
+    
+    if (!serverConnected) {
+      console.log('⚠️ Tentando reconectar automaticamente...');
+      const reconectado = await apiService.checkServerHealth();
+      setServerConnected(reconectado);
+      
+      if (!reconectado) {
+        Alert.alert('Atenção', 'ESP32 desconectado. Verifique o servidor.');
+        return;
+      }
+    }
+    
+    setTestando(true);
+    const success = await apiService.sendCommand(command);
+    setTestando(false);
+    
+    if (!success) {
+      setServerConnected(false);
+    }
+  };
 
   const handleCardPress = (cardId) => {
     if (flipped.length >= 2 || flipped.includes(cardId) || matched.includes(cardId)) {
@@ -128,31 +158,34 @@ export default function MemoryGame({ navigation }) {
       const secondCard = cards.find(card => card.id === secondId);
 
       if (firstCard.type === secondCard.type) {
-        // Match found
         setMatched([...matched, firstId, secondId]);
         setFlipped([]);
+        sendCommandToESP('ACERTOU');
         
-        // Check if game is complete
         if (matched.length + 2 === cards.length) {
           setTimeout(() => {
             Alert.alert(
               '🎉 Parabéns!',
-              `Você completou o jogo em ${moves + 1} movimentos!`,
+              `Você completou em ${moves + 1} movimentos!`,
               [{ text: 'Jogar Novamente', onPress: initializeGame }]
             );
           }, 500);
         }
       } else {
-        // No match - flip back after delay
         setTimeout(() => {
           setFlipped([]);
         }, 800);
+        sendCommandToESP('ERROU');
       }
     }
   };
 
   const isCardFlipped = (cardId) => {
     return flipped.includes(cardId) || matched.includes(cardId);
+  };
+
+  const testarLEDs = async () => {
+    await sendCommandToESP('TESTE_LEDS');
   };
 
   return (
@@ -163,7 +196,6 @@ export default function MemoryGame({ navigation }) {
     >
       <StatusBar backgroundColor="#2d004d" barStyle="light-content" />
       
-      {/* ESTRUTURA FIXA NO TOPO - MESMA DAS OUTRAS TELAS */}
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.header}>
           <TouchableOpacity 
@@ -177,8 +209,21 @@ export default function MemoryGame({ navigation }) {
         </View>
       </SafeAreaView>
 
-      {/* CONTEÚDO PRINCIPAL DO JOGO */}
       <View style={styles.content}>
+        <View style={styles.connectionStatus}>
+          <View style={[
+            styles.statusDot,
+            { backgroundColor: serverConnected ? '#4CAF50' : '#F44336' }
+          ]} />
+          <Text style={[
+            styles.statusText,
+            { color: serverConnected ? '#4CAF50' : '#F44336' }
+          ]}>
+            {serverConnected ? '✅ ESP32 Conectado' : '❌ ESP32 Desconectado'}
+          </Text>
+          {testando && <Text style={styles.testandoText}>Testando...</Text>}
+        </View>
+
         <View style={styles.gameBoard}>
           <View style={styles.cardsContainer}>
             {cards.map((card) => (
@@ -194,9 +239,25 @@ export default function MemoryGame({ navigation }) {
         </View>
 
         <View style={styles.footer}>
-          <TouchableOpacity style={styles.resetButton} onPress={initializeGame}>
+          <TouchableOpacity 
+            style={styles.resetButton} 
+            onPress={initializeGame}
+            disabled={testando}
+          >
             <Text style={styles.resetButtonText}>Reiniciar Jogo</Text>
           </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[styles.testButton, testando && styles.buttonDisabled]}
+            onPress={testarLEDs}
+            disabled={testando}
+          >
+            <Text style={styles.testButtonText}>
+              {testando ? 'Testando...' : 'Testar LEDs'}
+            </Text>
+          </TouchableOpacity>
+
+         
         </View>
       </View>
     </ImageBackground>
@@ -209,14 +270,9 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  container: {
-    flex: 1,
-    backgroundColor: 'transparent',
-  },
   safeArea: {
     backgroundColor: '#2d004d',
   },
-  // 🔥 HEADER FIXA NO TOPO - MESMA ESTRUTURA DAS OUTRAS TELAS
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -242,9 +298,7 @@ const styles = StyleSheet.create({
     fontSize: 26,
     fontWeight: 'bold',
     textAlign: 'center',
-    textAlignVertical: 'center',
     lineHeight: 21,
-    includeFontPadding: false,
   },
   headerTitle: {
     color: '#ffffff',
@@ -258,6 +312,29 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+  },
+  connectionStatus: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 12,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  statusDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    marginRight: 8,
+  },
+  statusText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  testandoText: {
+    color: '#FF9800',
+    fontSize: 12,
+    marginLeft: 10,
+    fontStyle: 'italic',
   },
   gameBoard: {
     flex: 1,
@@ -285,10 +362,7 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     borderColor: '#430169ff',
     shadowColor: '#6a5acd',
-    shadowOffset: {
-      width: 0,
-      height: 0,
-    },
+    shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.8,
     shadowRadius: 15,
     elevation: 15,
@@ -338,23 +412,52 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     borderColor: '#4b00bcff',
     shadowColor: '#9370db',
-    shadowOffset: {
-      width: 0,
-      height: 0,
-    },
+    shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 1,
     shadowRadius: 20,
     elevation: 15,
     minWidth: 180,
+    marginBottom: 10,
   },
   resetButtonText: {
     color: '#e0e0ff',
     fontSize: 18,
     fontWeight: 'bold',
     textAlign: 'center',
-    textShadowColor: 'rgba(147, 112, 219, 0.5)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 3,
-    letterSpacing: 0.5,
+  },
+  testButton: {
+    backgroundColor: '#5a2d8aff',
+    paddingHorizontal: 25,
+    paddingVertical: 12,
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: '#8b5cf6',
+    marginBottom: 8,
+    minWidth: 140,
+  },
+  buttonDisabled: {
+    backgroundColor: '#666',
+    borderColor: '#999',
+  },
+  testButtonText: {
+    color: '#e0e0ff',
+    fontSize: 14,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  debugButton: {
+    backgroundColor: '#ff9800',
+    paddingHorizontal: 25,
+    paddingVertical: 10,
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: '#ff5722',
+    minWidth: 140,
+  },
+  debugButtonText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
 });

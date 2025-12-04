@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   SafeAreaView,
   ImageBackground,
+  Image,
   StatusBar
 } from "react-native";
 
@@ -71,7 +72,7 @@ export default function Jogo8({ navigation }) {
             <Text style={styles.backButtonText}>←</Text>
           </TouchableOpacity>
           
-          <Text style={styles.title}>🦉 Toque na Coruja</Text>
+          <Text style={styles.title}>Toque na Coruja</Text>
           
           <View style={styles.headerSpacer} />
         </View>
@@ -105,13 +106,21 @@ export default function Jogo8({ navigation }) {
               ]}
               onPress={touchOwl}
             >
-              <Text style={styles.owlEmoji}>🦉</Text>
+              <Image 
+                source={require('../assets/owlEmoji.png')}
+                style={styles.owlImage}
+                resizeMode="contain"
+              />
             </TouchableOpacity>
           )}
 
           {!gameActive && timeLeft === 10 && (
             <View style={styles.startScreen}>
-              <Text style={styles.owlLarge}>🦉</Text>
+              <Image 
+                source={require('../assets/owlEmoji.png')}
+                style={styles.owlLargeImage}
+                resizeMode="contain"
+              />
               <Text style={styles.messageTitle}>Toque na Coruja!</Text>
               <Text style={styles.messageText}>
                 A coruja vai pular pela tela{'\n'}
@@ -145,11 +154,7 @@ export default function Jogo8({ navigation }) {
         </View>
       </ImageBackground>
 
-      <View style={styles.instructions}>
-        <Text style={styles.instructionsText}>
-          ⚡ Toque na coruja o mais rápido que puder!
-        </Text>
-      </View>
+      
     </View>
   );
 }
@@ -254,8 +259,14 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     borderColor: '#a78bfa',
   },
-  owlEmoji: {
-    fontSize: 40,
+  owlImage: {
+    width: 50,
+    height: 50,
+  },
+  owlLargeImage: {
+    width: 100,
+    height: 100,
+    marginBottom: 15,
   },
   startScreen: {
     alignItems: 'center',

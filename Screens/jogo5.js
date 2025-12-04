@@ -291,7 +291,7 @@ export default function ElephantGame({ navigation }) {
           >
             <Text style={styles.backButtonText}>←</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Alimente o Elefante</Text>
+          <Text style={styles.headerTitle}>Elefante comilão</Text>
           <View style={styles.headerSpacer} />
         </View>
       </SafeAreaView>

@@ -93,7 +93,7 @@ export default function Furry1({ route, navigation }) {
           >
             <Text style={styles.backButtonText}>←</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Cocofanto</Text>
+          <Text style={styles.headerTitle}>LUNO</Text>
           <View style={styles.headerSpacer} />
         </View>
       </SafeAreaView>
@@ -167,11 +167,7 @@ export default function Furry1({ route, navigation }) {
             </Animated.View>
           </View>
 
-          {scannedFromQR && (
-            <View style={styles.scanInfo}>
-              <Text style={styles.scanText}>Carta Escaneada!</Text>
-            </View>
-          )}
+          
         </Animated.View>
 
         {/* === MODAL INFORMAÇÕES ARRUMADO === */}
@@ -185,7 +181,7 @@ export default function Furry1({ route, navigation }) {
             <View style={styles.modalContent}>
               
               <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>🐘 ELEFANTE</Text>
+                <Text style={styles.modalTitle}> ELEFANTE</Text>
                 <TouchableOpacity 
                   style={styles.closeButton}
                   onPress={() => setShowSobre(false)}
@@ -201,7 +197,7 @@ export default function Furry1({ route, navigation }) {
                 <View style={styles.modalBody}>
                   
                   <View style={styles.infoCard}>
-                    <Text style={styles.cardTitle}>🌟 Características</Text>
+                    <Text style={styles.cardTitle}> Características</Text>
                     <Text style={styles.cardText}>
                       • Animal terrestre mais pesado{'\n'}
                       • Excelente memória{'\n'}
@@ -211,7 +207,7 @@ export default function Furry1({ route, navigation }) {
                   </View>
 
                   <View style={styles.infoCard}>
-                    <Text style={styles.cardTitle}>🏠 Onde Vivem</Text>
+                    <Text style={styles.cardTitle}> Onde Vivem</Text>
                     <Text style={styles.cardText}>
                       • Florestas tropicais{'\n'}
                       • Savanas africanas{'\n'}
@@ -221,7 +217,7 @@ export default function Furry1({ route, navigation }) {
                   </View>
 
                   <View style={styles.infoCard}>
-                    <Text style={styles.cardTitle}>🍃 Alimentação</Text>
+                    <Text style={styles.cardTitle}> Alimentação</Text>
                     <Text style={styles.cardText}>
                       • Herbívoros (comem plantas){'\n'}
                       • Comem até 150kg por dia{'\n'}
@@ -231,9 +227,9 @@ export default function Furry1({ route, navigation }) {
                   </View>
 
                   <View style={styles.funFact}>
-                    <Text style={styles.funFactTitle}>💡 Curiosidade!</Text>
+                    <Text style={styles.funFactTitle}> Curiosidade!</Text>
                     <Text style={styles.funFactText}>
-                      Os elefantes usam suas trombas para respirar, cheirar, beber água e pegar comida! É como ter um braço super especial! 🐘
+                      Os elefantes usam suas trombas para respirar, cheirar, beber água e pegar comida! É como ter um braço super especial! 
                     </Text>
                   </View>
 

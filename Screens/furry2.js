@@ -93,7 +93,7 @@ export default function Furry2({ route, navigation }) {
           >
             <Text style={styles.backButtonText}>←</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Carta Macaquini</Text>
+          <Text style={styles.headerTitle}>MOBI</Text>
           <View style={styles.headerSpacer} />
         </View>
       </SafeAreaView>
@@ -167,11 +167,7 @@ export default function Furry2({ route, navigation }) {
             </Animated.View>
           </View>
 
-          {scannedFromQR && (
-            <View style={styles.scanInfo}>
-              <Text style={styles.scanText}>Carta Escaneada!</Text>
-            </View>
-          )}
+         
         </Animated.View>
 
         {/* === MODAL INFORMAÇÕES ARRUMADO === */}
@@ -185,7 +181,7 @@ export default function Furry2({ route, navigation }) {
             <View style={styles.modalContent}>
               
               <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>🦉 MACACO</Text>
+                <Text style={styles.modalTitle}> MACACO</Text>
                 <TouchableOpacity 
                   style={styles.closeButton}
                   onPress={() => setShowSobre(false)}
@@ -201,7 +197,7 @@ export default function Furry2({ route, navigation }) {
                 <View style={styles.modalBody}>
                   
                   <View style={styles.infoCard}>
-                    <Text style={styles.cardTitle}>🌟 Características</Text>
+                    <Text style={styles.cardTitle}> Características</Text>
                     <Text style={styles.cardText}>
                       • Muito ágeis e inteligentes{'\n'}
                       • Vivem em grupos sociais{'\n'}
@@ -211,7 +207,7 @@ export default function Furry2({ route, navigation }) {
                   </View>
 
                   <View style={styles.infoCard}>
-                    <Text style={styles.cardTitle}>🏠 Onde Vivem</Text>
+                    <Text style={styles.cardTitle}> Onde Vivem</Text>
                     <Text style={styles.cardText}>
                       • Florestas tropicais{'\n'}
                       • Savanas e matas{'\n'}
@@ -221,7 +217,7 @@ export default function Furry2({ route, navigation }) {
                   </View>
 
                   <View style={styles.infoCard}>
-                    <Text style={styles.cardTitle}>🍌 Alimentação</Text>
+                    <Text style={styles.cardTitle}> Alimentação</Text>
                     <Text style={styles.cardText}>
                       • Frutas (bananas, mangas){'\n'}
                       • Folhas e sementes{'\n'}
@@ -231,9 +227,9 @@ export default function Furry2({ route, navigation }) {
                   </View>
 
                   <View style={styles.funFact}>
-                    <Text style={styles.funFactTitle}>💡 Curiosidade!</Text>
+                    <Text style={styles.funFactTitle}> Curiosidade!</Text>
                     <Text style={styles.funFactText}>
-                      Os macacos usam ferramentas como pedras para quebrar nozes! Eles também são muito inteligentes e podem aprender truques! 🐵
+                      Os macacos usam ferramentas como pedras para quebrar nozes! Eles também são muito inteligentes e podem aprender truques! 
                     </Text>
                   </View>
 

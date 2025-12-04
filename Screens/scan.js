@@ -34,6 +34,18 @@ export default function Scan() {
     initializeCamera();
   }, []);
 
+  // MODIFICAÇÃO AQUI: Botão de voltar sempre vai para uma tela específica
+  const handleBackPress = () => {
+    // SUBSTITUA 'NomeDaSuaTela' pelo nome da tela que você quer que o botão volte
+    navigation.navigate('BemVindo');
+    
+    // EXEMPLOS:
+    // navigation.navigate('Home');
+    // navigation.navigate('MenuPrincipal');
+    // navigation.navigate('Dashboard');
+    // navigation.navigate('MainScreen');
+  };
+
   const handleBarCodeScanned = ({ type, data }) => {
     if (!scanned) {
       setScanned(true);
@@ -44,18 +56,19 @@ export default function Scan() {
       setIsUrl(urlCheck);
     }
 
+    // VERIFICAÇÃO DOS QR CODES - AGORA VAI PARA TELAS DE BLOQUEIO
     if (data.toLowerCase().includes("furry1")) {
-      navigation.navigate("furry1");
+      navigation.navigate("TelaBloqueioFurry1");
       return;
     }
 
     if (data.toLowerCase().includes("furry2")) {
-      navigation.navigate("furry2");
+      navigation.navigate("TelaBloqueioFurry2");
       return;
     }
 
     if (data.toLowerCase().includes("furry3")) {
-      navigation.navigate("furry3");
+      navigation.navigate("TelaBloqueioFurry3");
       return;
     }
 
@@ -160,11 +173,11 @@ export default function Scan() {
         <View style={styles.header}>
           <TouchableOpacity
             style={styles.backButton}
-            onPress={() => navigation.goBack()}
+            onPress={handleBackPress} // Agora vai para a tela específica
           >
             <Text style={styles.backButtonText}>←</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Escanear QR Code</Text>
+          <Text style={styles.headerTitle}>SCAN QRCODE</Text>
           <View style={styles.headerSpacer} />
         </View>
       </SafeAreaView>
@@ -224,7 +237,7 @@ export default function Scan() {
         {/* RESULTADO */}
         <View style={styles.scannedDataContainer}>
           <Text style={styles.scannedDataLabel}>
-            {scanned ? "Conteúdo escaneado:" : "Aponte para um QR Code"}
+            {scanned ? "Conteúdo escaneado:" : "ESCANEIE UMA CARTA"}
           </Text>
           {scanned && (
             <Text style={styles.scannedDataText} numberOfLines={2}>
@@ -265,7 +278,7 @@ export default function Scan() {
 
           <TouchableOpacity style={styles.controlButton} onPress={resetScanner}>
             <Text style={styles.controlButtonText}>
-              {scanned ? '🔄 Escanear Novamente' : ' Escanear'}
+              {scanned ? 'Escanear Novamente' : ' Escanear'}
             </Text>
           </TouchableOpacity>
         </View>
@@ -293,7 +306,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 2,
     borderBottomColor: '#8b5cf6',
     marginTop: 30,
-    // ✅ REMOVIDA A MARGEM QUE CAUSAVA PROBLEMAS
   },
   backButton: {
     padding: 8,

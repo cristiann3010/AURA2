@@ -20,6 +20,10 @@ import jogo9 from "./Screens/jogo9";
 import game1 from "./Screens/game1";
 import game2 from "./Screens/game2";
 import game3 from "./Screens/game3";
+import TelaBloqueioFurry1 from "./Screens/TelaBloqueioFurry1";
+import TelaBloqueioFurry2 from "./Screens/TelaBloqueioFurry2";
+import TelaBloqueioFurry3 from "./Screens/TelaBloqueioFurry3";
+import AguardandoRFID from "./Screens/AguardandoRFID";
 
 const Stack = createNativeStackNavigator();
 
@@ -132,7 +136,27 @@ export default function App() {
           component={jogo9}
           options={{ title: 'Advinhação Mágica' }}
         />
-        
+        <Stack.Screen 
+          name="TelaBloqueioFurry1" 
+          component={TelaBloqueioFurry1}
+          options={{ title: 'Advinhação Mágica' }}
+        />
+        <Stack.Screen 
+          name="TelaBloqueioFurry2" 
+          component={TelaBloqueioFurry2}
+          options={{ title: 'Advinhação Mágica' }}
+        />
+        <Stack.Screen 
+          name="TelaBloqueioFurry3" 
+          component={TelaBloqueioFurry3}
+          options={{ title: 'Advinhação Mágica' }}
+        />
+        <Stack.Screen 
+          name="AguardandoRFID" 
+          component={AguardandoRFID}
+          options={{ title: 'Advinhação Mágica' }}
+        />
+
       </Stack.Navigator>
     </NavigationContainer>
   );

@@ -52,7 +52,7 @@ export default function Jogo7({ navigation }) {
 
     const allOptions = shuffleArray([count, ...wrongOptions]);
     setOptions(allOptions);
-    setMessage('Quantas bananas tem? 🐵');
+    setMessage('Quantas bananas tem?');
     setMonkeyMood('normal');
   };
 
@@ -162,7 +162,7 @@ export default function Jogo7({ navigation }) {
           >
             <Text style={styles.backButtonText}>←</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>🍌 Conte as Bananas</Text>
+          <Text style={styles.headerTitle}>Contagem de bananas</Text>
           <View style={styles.headerSpacer} />
         </View>
       </SafeAreaView>
@@ -172,7 +172,7 @@ export default function Jogo7({ navigation }) {
         <View style={styles.scorePanel}>
           <View style={styles.scoreItem}>
             <Text style={styles.scoreLabel}>ACERTOS</Text>
-            <Text style={styles.scoreValue}>🍌 {score / 10}</Text>
+            <Text style={styles.scoreValue}> {score / 10}</Text>
           </View>
           <View style={styles.scoreItem}>
             <Text style={styles.scoreLabel}>RODADA</Text>
@@ -203,15 +203,10 @@ export default function Jogo7({ navigation }) {
               <Text style={styles.startTitle}>Conte as Bananas!</Text>
               <Text style={styles.startDescription}>
                 Conte quantas bananas aparecem{'\n'}
-                e toque no número certo! 🍌
+                e toque no número certo!
               </Text>
               
-              <View style={styles.legendBox}>
-                <Text style={styles.legendTitle}>Como jogar:</Text>
-                <Text style={styles.legendItem}>👀 Olhe as bananas</Text>
-                <Text style={styles.legendItem}>🔢 Conte quantas tem</Text>
-                <Text style={styles.legendItem}>👆 Toque no número certo!</Text>
-              </View>
+             
 
               <TouchableOpacity style={styles.startButton} onPress={startGame}>
                 <Text style={styles.startButtonText}>COMEÇAR</Text>
@@ -444,7 +439,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     borderWidth: 2,
     borderColor: '#8bc34a',
-    backgroundColor: 'rgba(90, 143, 42, 0.9)',
+    backgroundColor: '#1a4d2e',
   },
   successBox: {
     backgroundColor: 'rgba(76, 175, 80, 0.9)',
@@ -470,7 +465,7 @@ const styles = StyleSheet.create({
     padding: 15,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 249, 230, 0.95)',
+    backgroundColor: '#1a4d2e',
   },
   bananasContainer: {
     flexDirection: 'row',
@@ -504,11 +499,11 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 3,
     borderColor: '#8bc34a',
-    backgroundColor: 'rgba(255, 249, 230, 0.95)',
+    backgroundColor: '#1a4d2e',
   },
   optionNumber: {
     fontSize: 45,
     fontWeight: 'bold',
-    color: '#1a4d2e',
+    color: '#ffffffff',
   },
 });

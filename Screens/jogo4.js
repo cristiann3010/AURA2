@@ -183,7 +183,7 @@ export default function ElephantMemory({ navigation }) {
         >
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>🐘 Encontre o Igual</Text>
+        <Text style={styles.headerTitle}>Lembrança do elefante</Text>
         <View style={styles.headerSpacer} />
       </View>
 

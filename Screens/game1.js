@@ -87,7 +87,7 @@ export default function MemoryGame({ navigation }) {
                 resizeMode="contain"
               />
               <View style={styles.textContainer}>
-                <Text style={styles.gameTitle}>Lembrança do elefante</Text>
+                <Text style={styles.gameTitle}>LEMBRANÇA DO ELEFANTE</Text>
                 <Text style={styles.gameSubtitle}></Text>
               </View>
             </LinearGradient>
@@ -110,7 +110,7 @@ export default function MemoryGame({ navigation }) {
                 resizeMode="contain"
               />
               <View style={styles.textContainer}>
-                <Text style={styles.gameTitle}>Elefante comilão</Text>
+                <Text style={styles.gameTitle}>ELEFANTE COMILÃO</Text>
                 <Text style={styles.gameSubtitle}></Text>
               </View>
             </LinearGradient>
