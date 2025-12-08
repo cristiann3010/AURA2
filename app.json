@@ -22,7 +22,6 @@
       },
       "edgeToEdgeEnabled": true,
       "permissions": [
-        "android.permission.CAMERA",
         "android.permission.CAMERA"
       ],
       "package": "com.criscrissa.AURA"
@@ -33,6 +32,11 @@
     "plugins": [
       "expo-barcode-scanner",
       "expo-font"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "2b6cbe78-772b-4b47-92a0-91a724312e49"
+      }
+    }
   }
 }
