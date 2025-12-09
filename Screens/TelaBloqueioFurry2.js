@@ -60,7 +60,7 @@ export default function TelaBloqueioFurry2() {
   }, []);
 
   const initializeSystem = async () => {
-    console.log('🚀 Iniciando sistema Furry2...');
+    console.log('🚀 Iniciando sistema Furry1...');
     await checkServer();
     startPolling();
   };
@@ -90,8 +90,8 @@ export default function TelaBloqueioFurry2() {
         setServerOnline(true);
         setStatus(data.connected ? '✅ Conectado! Aguardando carta...' : '❌ ESP32 desconectado');
         setIsConnected(data.connected);
-        setRetryCount(0);
-        console.log('✅ Servidor conectado com sucesso - Furry2');
+        setRetryCount(0); // Reset do contador em caso de sucesso
+        console.log('✅ Servidor conectado com sucesso');
       }
       
     } catch (error) {
@@ -103,7 +103,7 @@ export default function TelaBloqueioFurry2() {
       setStatus(`❌ Servidor offline (tentativa ${newRetryCount})`);
       setIsConnected(false);
       
-      console.log(`❌ Erro de conexão Furry2: ${error.message}`);
+      console.log(`❌ Erro de conexão: ${error.message}`);
       
       // Tentativa de reconexão automática
       if (newRetryCount <= 5) {
@@ -137,7 +137,7 @@ export default function TelaBloqueioFurry2() {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-      const response = await fetch(`${SERVER_URL}/api/check-card/furry2`, {
+      const response = await fetch(`${SERVER_URL}/api/check-card/furry1`, {
         signal: controller.signal
       });
       
@@ -150,8 +150,8 @@ export default function TelaBloqueioFurry2() {
       const data = await response.json();
       
       if (data.unlocked) {
-        console.log('🎉 MACACO DETECTADO - Processando...');
-        setStatus('✅ Carta do Macaco detectada! Liberando...');
+        console.log('🎉 ELEFANTE DETECTADO - Processando...');
+        setStatus('✅ Carta do Elefante detectada! Liberando...');
         setIsConnected(true);
         
         // Para o polling para evitar múltiplas execuções
@@ -162,7 +162,7 @@ export default function TelaBloqueioFurry2() {
         // Navega primeiro
         setTimeout(() => {
           if (isMountedRef.current) {
-            navigation.navigate('furry2', {
+            navigation.navigate('furry1', {
               scannedFromQR: true,
               rfidVerified: true
             });
@@ -173,7 +173,7 @@ export default function TelaBloqueioFurry2() {
         setTimeout(async () => {
           try {
             await fetch(`${SERVER_URL}/api/reset-cards`, { method: 'POST' });
-            console.log('🔄 Cartas resetadas após navegação do Macaco');
+            console.log('🔄 Cartas resetadas após navegação');
             
             // Reinicia o polling após o reset
             setTimeout(() => {
@@ -194,7 +194,7 @@ export default function TelaBloqueioFurry2() {
       }
       
     } catch (error) {
-      console.log('❌ Erro ao verificar carta Macaco:', error.message);
+      console.log('❌ Erro ao verificar carta:', error.message);
       // Se houver erro na verificação da carta, verifica o servidor
       if (isMountedRef.current) {
         setServerOnline(false);
@@ -220,20 +220,20 @@ export default function TelaBloqueioFurry2() {
 
   const simularLeitura = async () => {
     try {
-      setStatus('🔍 Simulando leitura do Macaco...');
+      setStatus('🔍 Simulando leitura do Elefante...');
       
-      const response = await fetch(`${SERVER_URL}/api/simulate-card/furry2`, {
+      const response = await fetch(`${SERVER_URL}/api/simulate-card/furry1`, {
         method: 'POST'
       });
       
       const data = await response.json();
       
       if (data.success) {
-        setStatus('✅ Carta do Macaco simulada!');
+        setStatus('✅ Carta do Elefante simulada!');
       }
     } catch (error) {
       setStatus('❌ Erro na simulação');
-      checkServer();
+      checkServer(); // Verifica conexão em caso de erro
     }
   };
 
@@ -241,6 +241,10 @@ export default function TelaBloqueioFurry2() {
     setRetryCount(0);
     setStatus('🔄 Reiniciando sistema...');
     initializeSystem();
+  };
+
+  const irParaGame2 = () => {
+    navigation.navigate('game2');
   };
 
   return (
@@ -287,7 +291,7 @@ export default function TelaBloqueioFurry2() {
           <Text style={styles.title}>Coloque a Carta no Leitor</Text>
           <Text style={styles.subtitle}>
             Aproxime a carta física do{'\n'}
-            <Text style={styles.highlight}>MACACO</Text> no dispositivo
+            <Text style={styles.highlight}>ELEFANTE</Text> no dispositivo
           </Text>
         </View>
 
@@ -324,7 +328,14 @@ export default function TelaBloqueioFurry2() {
             </Text>
           </TouchableOpacity>
 
-          
+          <TouchableOpacity
+            style={styles.game2Button}
+            onPress={irParaGame2}
+          >
+            <Text style={styles.game2ButtonText}>
+              🎮 IR PARA GAME 2
+            </Text>
+          </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.restartButton}
@@ -339,7 +350,7 @@ export default function TelaBloqueioFurry2() {
         <View style={styles.infoBox}>
           <Text style={styles.infoText}>
             {serverOnline ? (
-              `📍 ${isConnected ? 'Sistema pronto - Aproxime a carta do Macaco!' : 'Conecte o dispositivo USB'}`
+              `📍 ${isConnected ? 'Sistema pronto - Aproxime a carta!' : 'Conecte o dispositivo USB'}`
             ) : (
               `❌ Tentando reconectar automaticamente... (${retryCount}/5)`
             )}
@@ -370,7 +381,7 @@ const styles = StyleSheet.create({
   },
   backButton: {
     borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: 'rgba(50, 6, 82, 0.48)',
     width: 40,
     height: 40,
     alignItems: 'center',
@@ -535,6 +546,24 @@ const styles = StyleSheet.create({
     width: '80%',
   },
   testButtonText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
+  },
+  game2Button: {
+    backgroundColor: 'rgba(76, 175, 80, 0.3)',
+    paddingVertical: 12,
+    paddingHorizontal: 25,
+    borderRadius: 25,
+    borderWidth: 1,
+    borderColor: 'rgba(76, 175, 80, 0.5)',
+    width: '80%',
+  },
+  game2ButtonText: {
     color: '#ffffff',
     fontSize: 14,
     fontWeight: 'bold',

@@ -243,6 +243,10 @@ export default function TelaBloqueioFurry3() {
     initializeSystem();
   };
 
+  const irParaGame3 = () => {
+    navigation.navigate('game3');
+  };
+
   return (
     <ImageBackground 
       source={require('../assets/background.png')}
@@ -324,7 +328,14 @@ export default function TelaBloqueioFurry3() {
             </Text>
           </TouchableOpacity>
 
-          
+          <TouchableOpacity
+            style={styles.game3Button}
+            onPress={irParaGame3}
+          >
+            <Text style={styles.game3ButtonText}>
+              🎮 IR PARA GAME 3
+            </Text>
+          </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.restartButton}
@@ -543,16 +554,16 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 2,
   },
-  simulateButton: {
-    backgroundColor: 'rgba(255, 215, 0, 0.3)',
+  game3Button: {
+    backgroundColor: 'rgba(255, 152, 0, 0.3)',
     paddingVertical: 12,
     paddingHorizontal: 25,
     borderRadius: 25,
     borderWidth: 1,
-    borderColor: 'rgba(255, 215, 0, 0.5)',
+    borderColor: 'rgba(255, 152, 0, 0.5)',
     width: '80%',
   },
-  simulateButtonText: {
+  game3ButtonText: {
     color: '#ffffff',
     fontSize: 14,
     fontWeight: 'bold',

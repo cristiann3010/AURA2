@@ -107,7 +107,7 @@ export default function Jogo8({ navigation }) {
               onPress={touchOwl}
             >
               <Image 
-                source={require('../assets/owlEmoji.png')}
+                source={require('../assets/owlAcerto.png')}
                 style={styles.owlImage}
                 resizeMode="contain"
               />
@@ -117,7 +117,7 @@ export default function Jogo8({ navigation }) {
           {!gameActive && timeLeft === 10 && (
             <View style={styles.startScreen}>
               <Image 
-                source={require('../assets/owlEmoji.png')}
+                source={require('../assets/owlAcerto.png')}
                 style={styles.owlLargeImage}
                 resizeMode="contain"
               />

@@ -90,8 +90,8 @@ export default function TelaBloqueioFurry1() {
         setServerOnline(true);
         setStatus(data.connected ? '✅ Conectado! Aguardando carta...' : '❌ ESP32 desconectado');
         setIsConnected(data.connected);
-        setRetryCount(0); // Reset do contador em caso de sucesso
-        console.log('✅ Servidor conectado com sucesso');
+        setRetryCount(0);
+        console.log('✅ Servidor conectado com sucesso - Furry1');
       }
       
     } catch (error) {
@@ -103,7 +103,7 @@ export default function TelaBloqueioFurry1() {
       setStatus(`❌ Servidor offline (tentativa ${newRetryCount})`);
       setIsConnected(false);
       
-      console.log(`❌ Erro de conexão: ${error.message}`);
+      console.log(`❌ Erro de conexão Furry1: ${error.message}`);
       
       // Tentativa de reconexão automática
       if (newRetryCount <= 5) {
@@ -173,7 +173,7 @@ export default function TelaBloqueioFurry1() {
         setTimeout(async () => {
           try {
             await fetch(`${SERVER_URL}/api/reset-cards`, { method: 'POST' });
-            console.log('🔄 Cartas resetadas após navegação');
+            console.log('🔄 Cartas resetadas após navegação do Elefante');
             
             // Reinicia o polling após o reset
             setTimeout(() => {
@@ -194,7 +194,7 @@ export default function TelaBloqueioFurry1() {
       }
       
     } catch (error) {
-      console.log('❌ Erro ao verificar carta:', error.message);
+      console.log('❌ Erro ao verificar carta Elefante:', error.message);
       // Se houver erro na verificação da carta, verifica o servidor
       if (isMountedRef.current) {
         setServerOnline(false);
@@ -233,7 +233,7 @@ export default function TelaBloqueioFurry1() {
       }
     } catch (error) {
       setStatus('❌ Erro na simulação');
-      checkServer(); // Verifica conexão em caso de erro
+      checkServer();
     }
   };
 
@@ -241,6 +241,10 @@ export default function TelaBloqueioFurry1() {
     setRetryCount(0);
     setStatus('🔄 Reiniciando sistema...');
     initializeSystem();
+  };
+
+  const irParaGame1 = () => {
+    navigation.navigate('game1');
   };
 
   return (
@@ -324,7 +328,14 @@ export default function TelaBloqueioFurry1() {
             </Text>
           </TouchableOpacity>
 
-          
+          <TouchableOpacity
+            style={styles.game1Button}
+            onPress={irParaGame1}
+          >
+            <Text style={styles.game1ButtonText}>
+              🎮 IR PARA GAME 1
+            </Text>
+          </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.restartButton}
@@ -339,7 +350,7 @@ export default function TelaBloqueioFurry1() {
         <View style={styles.infoBox}>
           <Text style={styles.infoText}>
             {serverOnline ? (
-              `📍 ${isConnected ? 'Sistema pronto - Aproxime a carta!' : 'Conecte o dispositivo USB'}`
+              `📍 ${isConnected ? 'Sistema pronto - Aproxime a carta do Elefante!' : 'Conecte o dispositivo USB'}`
             ) : (
               `❌ Tentando reconectar automaticamente... (${retryCount}/5)`
             )}
@@ -369,7 +380,6 @@ const styles = StyleSheet.create({
     marginTop: 30,
   },
   backButton: {
-   
     borderRadius: 20,
     backgroundColor: 'rgba(50, 6, 82, 0.48)',
     width: 40,
@@ -544,16 +554,16 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 2,
   },
-  simulateButton: {
-    backgroundColor: 'rgba(255, 215, 0, 0.3)',
+  game1Button: {
+    backgroundColor: 'rgba(33, 150, 243, 0.3)',
     paddingVertical: 12,
     paddingHorizontal: 25,
     borderRadius: 25,
     borderWidth: 1,
-    borderColor: 'rgba(255, 215, 0, 0.5)',
+    borderColor: 'rgba(33, 150, 243, 0.5)',
     width: '80%',
   },
-  simulateButtonText: {
+  game1ButtonText: {
     color: '#ffffff',
     fontSize: 14,
     fontWeight: 'bold',
